@@ -4,10 +4,10 @@
 
 ### Under the hood of ATM software
 
-I read a lot of articles on GT and Habré about bank cards, ATMs, and so I decided to make my contribution. Below I will try to talk about how the ATM is arranged in terms of software.
+We read numerous articles on GT and Habré about bank cards and ATMs, and We decided to make our contribution. Below, I will try to talk about how the ATM is arranged in terms of software.
 
 #### What is an ATM?
-Any ATM is essentially a computer with connected peripherals, an equipment manager and the actual banking application that manages all this economy. All decisions on the issuance of money are made by the server. The ATM only collects information from the client and transmits it to the server.
+Any ATM is essentially a computer with connected peripherals, an equipment manager and the actual banking application that manages the entire economy. All decisions on the issuance of money are made by the server. The ATM only collects information from the client and transmits it to the server.
 
 #### ATM hardware
 The minimum set of ATM hardware includes:
@@ -54,7 +54,7 @@ In service mode, the ATM is in one of the states (001-999), each with a descript
 
 #### The rest of the states are arranged in a similar way:
 - States for reading the sum from the keyboard
-- States for reading a pin code
+- States for reading a PIN code
 - States for checking the entered data
 - States for selecting using the side keys
 - States for resetting and presetting buffers
