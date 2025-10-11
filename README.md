@@ -63,3 +63,26 @@ The application eventually interacts with the host (server) to process transacti
 
 #### Now about screens
 The ATM screen is a field of 32x16 cells. It can contain both graphic and textual information. Screens are referenced by number.
+
+
+## TESTING
+
+
+## UNIT TESTING
+
+Unit tests are written using Python's built-in `unittest` module. To create and run unit tests for this project:
+
+1. Create a new file, for example, `unittest.py` in the project directory.
+2. Add test cases for your classes and functions. Example for the `card` class:
+
+```python
+import unittest
+
+```
+
+3. Run your tests from the terminal:
+```
+python unittest.py
+```
+
+This will run all the test cases and show the results. You can create similar test files for other modules and functions.
