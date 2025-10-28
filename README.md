@@ -1,5 +1,32 @@
 # ATM Banking Application - Python
 
+## Table of Contents
+- [ATM Banking Application - Python](#atm-banking-application---python)
+  - [Table of Contents](#table-of-contents)
+  - [OVERVIEW](#overview)
+    - [Under the hood of ATM software](#under-the-hood-of-atm-software)
+      - [What is an ATM?](#what-is-an-atm)
+      - [ATM hardware](#atm-hardware)
+      - [Who is running this zoo?](#who-is-running-this-zoo)
+      - [For card reader:](#for-card-reader)
+      - [Banking application](#banking-application)
+      - [How does it work](#how-does-it-work)
+      - [Example configuration of a typical state A:](#example-configuration-of-a-typical-state-a)
+      - [The rest of the states are arranged in a similar way:](#the-rest-of-the-states-are-arranged-in-a-similar-way)
+      - [Now about screens](#now-about-screens)
+  - [WEB INTERFACE ARCHITECTURE](#web-interface-architecture)
+    - [Controller Layer (`controllers/default.js`)](#controller-layer-controllersdefaultjs)
+      - [Key Components:](#key-components)
+      - [WebSocket Functionality:](#websocket-functionality)
+      - [Data Flow:](#data-flow)
+      - [Security Features:](#security-features)
+    - [Views Layer (views/)](#views-layer-views)
+      - [Customization tips](#customization-tips)
+    - [File Structure:](#file-structure)
+    - [Usage:](#usage)
+  - [TESTING](#testing)
+  - [UNIT TESTING](#unit-testing)
+
 ## OVERVIEW
 
 ### Under the hood of ATM software
@@ -99,10 +126,29 @@ The main controller handles the web interface and terminal integration:
 - Force termination of orphaned processes
 - Environment variable-based credential initialization
 
+### Views Layer (views/)
+- layout.html
+  - Base HTML layout loaded by the template engine.
+  - Includes jQuery, xterm.js, and the xterm attach addon via CDN.
+  - Defines global styles (including xterm defaults), base page styling, and the ATM background.
+  - Renders page content at the @{body} placeholder inside <main id="main-container">.
+- index.html
+  - Renders the Run Program button and the #terminal container.
+  - Initializes xterm with 80x24 size, prints a startup message, opens a WebSocket to the server root (/), and attaches the terminal to the socket.
+  - Sets focus to the terminal input after load.
+
+#### Customization tips
+- Terminal size: change cols/rows in index.html Terminal({...}).
+- Page/ATM background and styles: edit CSS in layout.html (body, #main-container, .xterm).
+- Library versions: update the CDN URLs in layout.html.
+
 ### File Structure:
 ```
 controllers/
   └── default.js     # Main WebSocket controller for terminal integration
+views/
+  ├── layout.html    # Base layout + xterm includes/styles
+  └── index.html     # Terminal UI + WebSocket client bootstrap
 run.py              # Main Python ATM application entry point
 creds.json          # Credentials file (generated from environment)
 ```
