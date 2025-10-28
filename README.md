@@ -65,6 +65,51 @@ The application eventually interacts with the host (server) to process transacti
 The ATM screen is a field of 32x16 cells. It can contain both graphic and textual information. Screens are referenced by number.
 
 
+## WEB INTERFACE ARCHITECTURE
+
+This ATM Banking Application includes a web-based interface that provides terminal access to the Python application through a browser. The architecture consists of:
+
+### Controller Layer (`controllers/default.js`)
+
+The main controller handles the web interface and terminal integration:
+
+#### Key Components:
+- **WebSocket Connection**: Establishes real-time communication between the web client and the ATM application
+- **Pseudo-Terminal Integration**: Uses `node-pty` to spawn Python processes and manage terminal sessions
+- **Credential Management**: Handles initialization of credentials from environment variables
+
+#### WebSocket Functionality:
+- **Terminal Spawning**: Each client connection spawns a new pseudo-terminal running `python3 run.py`
+- **Real-time Communication**: Forwards terminal output to clients and user input to the terminal
+- **Process Management**: Handles terminal process lifecycle including cleanup on disconnection
+- **Terminal Configuration**: 
+  - Terminal type: `xterm-color` (for color support)
+  - Dimensions: 80 columns × 24 rows
+  - Environment: Inherits from host system
+
+#### Data Flow:
+1. Client connects via WebSocket to `/` route
+2. Server spawns Python terminal process (`run.py`)
+3. Terminal output is forwarded to client in real-time
+4. User input from web interface is sent to terminal
+5. Process cleanup occurs when client disconnects
+
+#### Security Features:
+- Automatic session cleanup on disconnection
+- Force termination of orphaned processes
+- Environment variable-based credential initialization
+
+### File Structure:
+```
+controllers/
+  └── default.js     # Main WebSocket controller for terminal integration
+run.py              # Main Python ATM application entry point
+creds.json          # Credentials file (generated from environment)
+```
+
+### Usage:
+The web interface allows users to interact with the ATM Banking Application through a browser-based terminal, providing the full ATM experience without requiring direct Python execution on the client machine.
+
 ## TESTING
 
 
