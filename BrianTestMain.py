@@ -50,7 +50,7 @@ y = x.GetATMCards(4402106811111111)
 print(y[0].getAccountBalance())
 
 # Change the pin on the previous card
-print(y[0].setPin(2345))
+print(y[0].setPin(3456))
 
 # Increase the number of failed tries on the previous card
 print(y[0].increaseFailedTries())
@@ -61,5 +61,8 @@ print(y[0].resetFailedTries())
 print(y[0].getFailedTries())
 
 print(y[0].increaseBalance(200))
+
+y = x.getAccountHolders(1)
+print(y[0].updateAccount("Testy","McTest","1234567"))
 
 print("End of BrianTest")

@@ -14,11 +14,20 @@ class ATMCard(Account):
         return self.pin
     
     def setPin(self, newPin):
-        self.pin = newPin
         'Call api to update server'
         from API import API
         a = API()
-        return a.setPin(self.cardNumber,newPin)
+        try:
+            card_cell = a.SHEET.worksheet("atmCards").findall(self.cardNumber)
+            ' There should be only one, but this search will ensure it is the card number column that was found'
+            for idColCheck in card_cell:
+                if int(idColCheck.col)==2:
+                    a.SHEET.worksheet("atmCards").update_cell(idColCheck.row,3,newPin)
+                    self.pin = newPin
+                    return True
+        except:
+            return False
+        return False
     
     def getFailedTries(self):
         return self.failedTries
@@ -27,20 +36,30 @@ class ATMCard(Account):
         'Call api to update server'
         from API import API
         a = API()
-        if a.increaseFailedTries(self.cardNumber,int(self.failedTries)+1):
-            ' server updated, update the local instance'
-            self.failedTries = int(self.failedTries)+ 1
-            return True
-        else:
+        try:
+            card_cell = a.SHEET.worksheet("atmCards").findall(self.cardNumber)
+            ' There should be only one, but this search will ensure it is the card number column that was found'
+            for idColCheck in card_cell:
+                if int(idColCheck.col)==2:
+                    a.SHEET.worksheet("atmCards").update_cell(idColCheck.row,4,int(self.failedTries)+1)
+                    self.failedTries = int(self.failedTries)+ 1
+                    return True
+        except:
             return False
-
+        return False
+        
     def resetFailedTries(self):
         'Call api to update server'
         from API import API
         a = API()
-        if a.resetFailedTries(self.cardNumber):
-            ' server updated, update the local instance'
-            self.failedTries = 0
-            return True
-        else:
+        try:
+            card_cell = a.SHEET.worksheet("atmCards").findall(self.cardNumber)
+            ' There should be only one, but this search will ensure it is the card number column that was found'
+            for idColCheck in card_cell:
+                if int(idColCheck.col)==2:
+                    a.SHEET.worksheet("atmCards").update_cell(idColCheck.row,4,0)
+                    self.failedTries = 0
+                    return True
+        except:
             return False
+        return False

@@ -22,9 +22,18 @@ class Account:
         'Call api to update server'
         from API import API
         a = API()
-        if a.increaseBalance(self.accountID,amountToAdd):
-            ' server updated, update the local instance'
-            self.accountBalance = float(self.accountBalance) + amountToAdd
-            return True
-        else:
+        try:
+            account_cell = a.SHEET.worksheet("account").findall(self.accountID)
+            ' There should be only one, but this search will ensure it is the card number column that was found'
+            for idColCheck in account_cell:
+                if int(idColCheck.col)==1:
+                    from Account import formatFloatFromServer
+                    curValue = formatFloatFromServer(a.SHEET.worksheet("account").row_values(idColCheck.row)[2])
+                    print(curValue)                    
+                    curValue = float(curValue)+amountToAdd
+                    print(curValue)
+                    a.SHEET.worksheet("account").update_cell(idColCheck.row,3,curValue)
+                    return True
+        except:
             return False
+        return False
