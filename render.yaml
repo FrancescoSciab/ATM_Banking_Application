@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: atm-banking
+    env: node
+    plan: free
+    buildCommand: |
+      pip3 install -r requirements.txt || true
+      npm install
+    startCommand: npm start
+    envVars:
+      - key: CREDS
+        sync: false

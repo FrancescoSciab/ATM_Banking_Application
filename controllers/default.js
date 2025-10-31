@@ -1,82 +1,124 @@
 // Import required modules
-const Pty = require('node-pty'); // Node.js library for spawning pseudo terminals
+// const Pty = require('node-pty'); // Node.js library for spawning pseudo terminals
 const fs = require('fs');        // File system module for file operations
+const path = require('path');    // Path utilities
+const { spawn, spawnSync } = require('child_process'); // Use child_process instead of node-pty
 
 /**
  * Install function to set up routes and websocket connections
  * This function is called when the controller is loaded
  */
 exports.install = function () {
-    // Set up the main route for the application
-    ROUTE('/');
-    
-    // Set up websocket connection on root path with raw message handling
-    WEBSOCKET('/', socket, ['raw']);
+    // Render the index view
+    ROUTE('/', function () {
+        this.view('index');
+    });
+
+    // Use default websocket framing (text frames)
+    WEBSOCKET('/', socket, ['raw']); // raw frames (no JSON encode/decode)
 };
+
+// Resolve a usable Python 3 binary across platforms
+function resolvePython() {
+    const candidates = [];
+    if (process.env.PYTHON) candidates.push(process.env.PYTHON);
+    if (process.env.PYTHON_BIN) candidates.push(process.env.PYTHON_BIN);
+
+    const isWin = process.platform === 'win32';
+    if (isWin) {
+        candidates.push('python');
+        candidates.push('python3');
+        candidates.push('py -3');
+        candidates.push('py');
+    } else {
+        candidates.push('python3');
+        candidates.push('python');
+    }
+
+    const tried = [];
+    for (const cand of candidates) {
+        let cmd = cand;
+        let args = [];
+        if (cand.includes(' ')) {
+            const parts = cand.split(' ').filter(Boolean);
+            cmd = parts[0];
+            args = parts.slice(1);
+        }
+        tried.push(cand);
+        const res = spawnSync(cmd, [...args, '--version'], { encoding: 'utf8' });
+        if (!res.error && res.status === 0) {
+            return { cmd, args, tried };
+        }
+    }
+    return { cmd: null, args: [], tried };
+}
 
 /**
  * WebSocket handler function for terminal connections
- * Manages the lifecycle of pseudo-terminal sessions for clients
+ * Manages the lifecycle of Python process sessions for clients
  */
 function socket() {
-    // Disable automatic encoding/decoding of messages (handle raw data)
+    // Default encode/decode (JSON) prevents plain text input -> disable it
     this.encodedecode = false;
-    
     // Enable automatic cleanup when connection closes
     this.autodestroy();
 
-    /**
-     * Handle new client connections
-     * Creates a new pseudo-terminal for each client
-     */
     this.on('open', function (client) {
-        // Spawn a new pseudo-terminal running the Python ATM application
-        client.tty = Pty.spawn('python3', ['run.py'], {
-            name: 'xterm-color',    // Terminal type for color support
-            cols: 80,               // Terminal width in columns
-            rows: 24,               // Terminal height in rows
-            cwd: process.env.PWD,   // Current working directory
-            env: process.env        // Environment variables
+        const scriptPath = path.join(__dirname, '..', 'run.py');
+
+        // Resolve Python binary cross-platform
+        const py = resolvePython();
+        if (!py.cmd) {
+            const msg = `Python 3 not found. Please install Python 3 and add it to PATH.
+Tried: ${py.tried.join(', ')}
+On Windows, install from python.org and ensure "Add python.exe to PATH" is selected.
+`;
+            client.send(msg.replace(/\n/g, '\r\n'));
+            client.close();
+            return;
+        }
+
+        // Use unbuffered mode (-u) and force UTF-8 encoding for stdout/stderr
+        client.proc = spawn(py.cmd, [...py.args, '-u', scriptPath], {
+            cwd: path.join(__dirname, '..'),
+            env: { ...process.env, PYTHONIOENCODING: 'utf-8' },
+            stdio: ['pipe', 'pipe', 'pipe']
         });
 
-        /**
-         * Handle terminal process exit
-         * Cleans up resources when the Python process terminates
-         */
-        client.tty.on('exit', function (code, signal) {
-            client.tty = null;      // Clear the terminal reference
-            client.close();         // Close the websocket connection
+        client.proc.on('error', (err) => {
+            client.send(Buffer.from(`Failed to start Python: ${err.message}\r\n`, 'utf8'));
+        });
+
+        // Always send UTF-8 strings to the browser (avoid Buffer JSON)
+        client.proc.stdout.on('data', (data) => client.send(data.toString('utf8')));
+        client.proc.stderr.on('data', (data) => client.send(data.toString('utf8')));
+
+        client.proc.on('close', () => {
+            client.proc = null;
+            try { client.close(); } catch {}
             console.log("Process killed");
-        });
-
-        /**
-         * Handle data output from the terminal
-         * Forwards terminal output to the connected client
-         */
-        client.tty.on('data', function (data) {
-            client.send(data);      // Send terminal output to websocket client
         });
     });
 
-    /**
-     * Handle client disconnection
-     * Ensures proper cleanup of terminal processes when clients disconnect
-     */
+    this.on('message', function (client, msg) {
+        // msg is Buffer in raw mode; convert CR -> LF for Python input()
+        if (client.proc?.stdin?.writable) {
+            const buf = Buffer.isBuffer(msg) ? msg : Buffer.from(String(msg), 'utf8');
+            const normalized = buf.toString('utf8').replace(/\r/g, '\n');
+            client.proc.stdin.write(normalized);
+        }
+    });
+
     this.on('close', function (client) {
-        if (client.tty) {
-            client.tty.kill(9);     // Force kill the terminal process (SIGKILL)
-            client.tty = null;      // Clear the terminal reference
+        if (client.proc) {
+            try { client.proc.kill(); } catch {}
+            client.proc = null;
             console.log("Process killed and terminal unloaded");
         }
     });
 
-    /**
-     * Handle incoming messages from clients
-     * Forwards user input from the web interface to the terminal
-     */
-    this.on('message', function (client, msg) {
-        // Write the message to the terminal if it exists
-        client.tty && client.tty.write(msg);
+    this.on('error', function (err) {
+        console.error('WebSocket error:', err);
     });
 }
 
@@ -87,13 +129,9 @@ function socket() {
  */
 if (process.env.CREDS != null) {
     console.log("Creating creds.json file.");
-    
-    // Write the credentials from environment variable to creds.json file
     fs.writeFile('creds.json', process.env.CREDS, 'utf8', function (err) {
         if (err) {
             console.log('Error writing file: ', err);
-            // Note: socket.emit won't work here as socket isn't defined in this scope
-            socket.emit("console_output", "Error saving credentials: " + err);
         }
     });
 }

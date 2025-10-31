@@ -1,27 +1,105 @@
-<body>
-<button onclick="window.location.reload()">Run Program</button>
-<div id="terminal"></div>
+<button id="runBtn" onclick="startProgram()">Run Program</button>
+<div id="terminal" tabindex="0"></div>
 
 <script>
-        var term = new Terminal({
-            cols: 80,
-            rows: 24
-        });
+    let started = false;
+    function startProgram() {
+        if (started) return;
+        started = true;
+
+        var term = new Terminal({ cols: 80, rows: 24, convertEol: true });
         term.open(document.getElementById('terminal'));
+        term.focus();
         term.writeln('Running startup command: python run.py');
         term.writeln('');
 
-        var ws = new WebSocket(location.protocol.replace('http', 'ws') + '//' + location.hostname + (location.port ? (
-            ':' + location.port) : '') + '/');
+        var ws = new WebSocket(location.protocol.replace('http', 'ws') + '//' + location.hostname + (location.port ? (':' + location.port) : '') + '/');
 
         ws.onopen = function () {
-            new attach.attach(term, ws);
+            document.getElementById('runBtn').disabled = true;
+            term.focus();
         };
 
-        ws.onerror = function (e) {
-            console.log(e);
+        // Server -> terminal
+        ws.onmessage = function (evt) {
+            if (typeof evt.data === 'string') {
+                term.write(evt.data);
+            } else if (evt.data instanceof ArrayBuffer) {
+                var txt = new TextDecoder('utf-8').decode(new Uint8Array(evt.data));
+                term.write(txt);
+            } else {
+                var reader = new FileReader();
+                reader.onload = function () { term.write(reader.result); };
+                reader.readAsText(evt.data);
+            }
         };
-        // Set focus in the terminal
-        document.getElementsByClassName("xterm-helper-textarea")[0].focus();
-    </script>
-</body>
+
+        ws.onerror = function (e) { console.log(e); };
+        ws.onclose = function () {
+            term.write('\r\n[Session closed]\r\n');
+            document.getElementById('runBtn').disabled = false;
+            started = false;
+        };
+
+        // Simple local-echo line editor: buffer input, echo locally, send on Enter
+        let line = '';
+        term.onData(function (data) {
+            if (ws.readyState !== WebSocket.OPEN) return;
+
+            // Handle Enter (CR or LF)
+            if (data === '\r' || data === '\n') {
+                term.write('\r\n');
+                ws.send(line + '\n');  // send the completed line
+                line = '';
+                return;
+            }
+
+            // Handle Ctrl+C
+            if (data === '\x03') {
+                term.write('^C\r\n');
+                ws.send('\x03');
+                line = '';
+                return;
+            }
+
+            // Handle Backspace (DEL)
+            if (data === '\x7f') {
+                if (line.length > 0) {
+                    line = line.slice(0, -1);
+                    term.write('\b \b'); // move back, erase, move back
+                }
+                return;
+            }
+
+            // For pasted text or multi-char data, normalize CR to LF and split
+            if (data.length > 1) {
+                data = data.replace(/\r/g, '\n');
+                for (const ch of data) {
+                    if (ch === '\n') {
+                        term.write('\r\n');
+                        ws.send(line + '\n');
+                        line = '';
+                    } else if (ch >= ' ') {
+                        line += ch;
+                        term.write(ch);
+                    }
+                }
+                return;
+            }
+
+            // Printable characters
+            if (data >= ' ') {
+                line += data;
+                term.write(data);
+            }
+        });
+
+        // Ensure focus
+        const termEl = document.getElementById('terminal');
+        termEl.addEventListener('click', () => term.focus());
+        setTimeout(function () {
+            var ta = document.getElementsByClassName("xterm-helper-textarea")[0];
+            if (ta) ta.focus();
+        }, 50);
+    }
+</script>
