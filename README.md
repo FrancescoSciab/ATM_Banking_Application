@@ -23,7 +23,10 @@
     - [Views Layer (views/)](#views-layer-views)
       - [Customization tips](#customization-tips)
     - [File Structure:](#file-structure)
-    - [Usage:](#usage)
+    - [Usage (Localhost)](#usage-localhost)
+    - [Deploy on Render](#deploy-on-render)
+    - [Troubleshooting](#troubleshooting)
+    - [Security](#security)
   - [TESTING](#testing)
   - [UNIT TESTING](#unit-testing)
 
@@ -94,67 +97,96 @@ The ATM screen is a field of 32x16 cells. It can contain both graphic and textua
 
 ## WEB INTERFACE ARCHITECTURE
 
-This ATM Banking Application includes a web-based interface that provides terminal access to the Python application through a browser. The architecture consists of:
+![Screenshot 38](img/Screenshot_38.png)
+
+This ATM Banking Application includes a web-based interface that provides terminal-like access to the Python application through a browser.
 
 ### Controller Layer (`controllers/default.js`)
 
-The main controller handles the web interface and terminal integration:
+The main controller handles the web interface and terminal integration.
 
 #### Key Components:
-- **WebSocket Connection**: Establishes real-time communication between the web client and the ATM application
-- **Pseudo-Terminal Integration**: Uses `node-pty` to spawn Python processes and manage terminal sessions
-- **Credential Management**: Handles initialization of credentials from environment variables
+- WebSocket Connection: real-time communication between the web client and the Python process.
+- Child Process: uses Node’s child_process.spawn to run Python (`python -u run.py`) and pipe stdin/stdout/stderr.
+- Credential Management: optionally writes creds.json from the CREDS environment variable at startup.
 
 #### WebSocket Functionality:
-- **Terminal Spawning**: Each client connection spawns a new pseudo-terminal running `python3 run.py`
-- **Real-time Communication**: Forwards terminal output to clients and user input to the terminal
-- **Process Management**: Handles terminal process lifecycle including cleanup on disconnection
-- **Terminal Configuration**: 
-  - Terminal type: `xterm-color` (for color support)
-  - Dimensions: 80 columns × 24 rows
-  - Environment: Inherits from host system
+- Process Spawning: each connection starts a new Python process in unbuffered mode (`-u`) with UTF-8 (`PYTHONIOENCODING=utf-8`).
+- Real-time Output: Python stdout/stderr are forwarded to the browser as UTF-8 strings.
+- Input Handling: browser keystrokes are sent over WebSocket and written to Python stdin (CR is normalized to LF for input()).
+- Raw Mode: WebSocket runs in raw mode with encode/decode disabled to pass exact bytes when needed.
 
 #### Data Flow:
-1. Client connects via WebSocket to `/` route
-2. Server spawns Python terminal process (`run.py`)
-3. Terminal output is forwarded to client in real-time
-4. User input from web interface is sent to terminal
-5. Process cleanup occurs when client disconnects
+1. Client opens WebSocket to the root path `/`.
+2. Server spawns Python (`run.py`).
+3. Server forwards Python output to client.
+4. Client sends user input back to server; server writes it to Python stdin.
+5. Server cleans up the process on disconnect.
 
 #### Security Features:
-- Automatic session cleanup on disconnection
-- Force termination of orphaned processes
-- Environment variable-based credential initialization
+- Automatic cleanup on disconnect.
+- Optional credentials initialization from environment variables.
+- No credentials are required to run in “demo mode” (when Google Sheets is unavailable).
 
 ### Views Layer (views/)
 - layout.html
-  - Base HTML layout loaded by the template engine.
-  - Includes jQuery, xterm.js, and the xterm attach addon via CDN.
-  - Defines global styles (including xterm defaults), base page styling, and the ATM background.
-  - Renders page content at the @{body} placeholder inside <main id="main-container">.
+  - Base layout + xterm.js from CDN.
+  - Global styles and background.
 - index.html
-  - Renders the Run Program button and the #terminal container.
-  - Initializes xterm with 80x24 size, prints a startup message, opens a WebSocket to the server root (/), and attaches the terminal to the socket.
-  - Sets focus to the terminal input after load.
+  - Renders the “Run Program” button and terminal container.
+  - Manually wires WebSocket and xterm (no attach addon) and implements a minimal “local echo” line editor:
+    - Echoes typed characters locally.
+    - Backspace support.
+    - Sends the buffered line on Enter to Python input().
 
 #### Customization tips
 - Terminal size: change cols/rows in index.html Terminal({...}).
-- Page/ATM background and styles: edit CSS in layout.html (body, #main-container, .xterm).
-- Library versions: update the CDN URLs in layout.html.
+- Styles and background: edit CSS in layout.html.
 
 ### File Structure:
 ```
 controllers/
-  └── default.js     # Main WebSocket controller for terminal integration
+  └── default.js     # WebSocket + child_process bridge to Python
 views/
   ├── layout.html    # Base layout + xterm includes/styles
-  └── index.html     # Terminal UI + WebSocket client bootstrap
-run.py              # Main Python ATM application entry point
-creds.json          # Credentials file (generated from environment)
+  └── index.html     # Terminal UI + manual WS wiring + local echo
+run.py               # Python ATM app (Google Sheets optional)
+index.js             # Total.js server entry
+requirements.txt     # Python libs for Sheets integration
+render.yaml          # Render deploy config
 ```
 
-### Usage:
-The web interface allows users to interact with the ATM Banking Application through a browser-based terminal, providing the full ATM experience without requiring direct Python execution on the client machine.
+### Usage (Localhost)
+1. Install Node 16+ and Python 3 on your PATH (verify: `python --version` or `python3 --version`).
+2. Install Node deps:
+   - `npm install`
+3. Start the server:
+   - `npm start`
+4. Open http://localhost:3000
+5. Click “Run Program”, click inside the terminal, type your input, and press Enter.
+   - The browser provides local echo (characters appear as you type).
+   - If Google Sheets isn’t configured, the app can still run in demo mode.
+
+### Deploy on Render
+- Push the repo to Git.
+- Create a new “Web Service” on Render, it will use `render.yaml`.
+- Set environment variable `CREDS` with your Google service account JSON content (do not commit creds.json).
+- Render will `pip3 install -r requirements.txt` and `npm install`, then start `npm start`.
+
+### Troubleshooting
+- Python not found:
+  - Install Python 3 and ensure it’s on PATH. On Windows, enable “Add python.exe to PATH” during install.
+- Keyboard not typing:
+  - Click inside the terminal to focus.
+  - The client uses a simple line editor; press Enter to submit input lines.
+- Output shows JSON digits like {"type":"Buffer", "data":[...]}:
+  - The server now sends UTF-8 strings; refresh the page (Ctrl+F5) to load the latest client.
+- Google Sheets disabled:
+  - The app will still run; set the `CREDS` environment variable to enable Sheets.
+
+### Security
+- Do not commit creds.json. Remove it from the repository and rotate the key in Google Cloud.
+- Prefer setting the `CREDS` environment variable in local/dev and production.
 
 ## TESTING
 

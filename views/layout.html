@@ -17,6 +17,9 @@
           type="favicon-16x16.png" />
     <title>ATM</title>
     <style>
+        /* Fill the viewport and remove default margins */
+        html, body { height: 100%; margin: 0; }
+
         body {
             font-family: Arial;
             background-color: aqua;
@@ -26,8 +29,14 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            background-image: url(https://i.ibb.co/8XcWskT/ATM-Machine-PNG-Download-Image.png);
-            height: 100vh;
+
+            /* Adjust the background image to fit the screen */
+            background-image: url(https://i.ibb.co/KpjjphHY/ATM-Machine.jpg);
+            background-size: cover;          /* scale to cover the viewport */
+            background-position: center;     /* keep image centered */
+            background-repeat: no-repeat;    /* no tiling */
+            width: 100%;
+            min-height: 100vh;
         }
         /**
         * Default styles for xterm.js
