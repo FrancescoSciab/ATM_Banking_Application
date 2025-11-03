@@ -2,14 +2,14 @@
   "name": "atm-banking-application",
   "version": "1.0.0",
   "private": true,
-  "description": "ATM app running in a web terminal with Total.js + node-pty",
+  "description": "ATM app running in a web terminal with Total.js",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
     "dev": "node index.js"
   },
   "engines": {
-    "node": ">=16"
+    "node": "20.x"
   },
   "dependencies": {
     "total4": "latest"
