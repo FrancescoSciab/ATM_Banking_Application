@@ -3,6 +3,8 @@ import gspread
 from google.oauth2.service_account import Credentials
 
 # General functions will be used repeatedly
+
+# Function to ensure that the number in the database is converted to a float type for easier processing
 def formatFloatFromServer(numberToConvert):
         numberToConvert=str(numberToConvert).replace(',','.')
         return numberToConvert
@@ -117,6 +119,7 @@ class AccountHolder:
     # @firstname - a string
     # @lastname - a string
     # @phone - a string
+    # Returns true if database successfully updated, false if it did not
     def updateAccount(self, firstname, lastname, phone):
         'Call api to update server'
         a = API()
@@ -155,6 +158,7 @@ class Account:
 
     # Update the balance on the account
     # @amountToAdd - a float, can be negative to reduce the balance, or positive to increase it
+    # Returns true if database successfully updated, false if it did not
     def increaseBalance(self, amountToAdd):
         'Call api to update server'
         a = API()
@@ -190,6 +194,7 @@ class ATMCard(Account):
     
     # Update the pin in the database relating to an instance of an ATMCard
     # @newPin - an int
+    # Returns true if database successfully updated, false if it did not
     def setPin(self, newPin):
         'Call api to update server'
         a = API()
@@ -209,6 +214,7 @@ class ATMCard(Account):
         return self.failedTries
     
     # Update the number of failed tries in the database by 1
+    # Returns true if database successfully updated, false if it did not
     def increaseFailedTries(self):        
         'Call api to update server'
         a = API()
@@ -225,6 +231,7 @@ class ATMCard(Account):
         return False
     
     # Update the number of failedTries in the database, resets the number to 0
+    # Returns true if database successfully updated, false if it did not
     def resetFailedTries(self):
         'Call api to update server'
         a = API()
