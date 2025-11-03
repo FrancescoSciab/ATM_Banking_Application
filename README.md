@@ -24,9 +24,7 @@
       - [Customization tips](#customization-tips)
     - [File Structure:](#file-structure)
     - [Usage (Localhost)](#usage-localhost)
-    - [Deploy on Render](#deploy-on-render)
-    - [Troubleshooting](#troubleshooting)
-    - [Security](#security)
+    - [Deploy on Render (Quick Guide)](#deploy-on-render-quick-guide)
   - [TESTING](#testing)
   - [UNIT TESTING](#unit-testing)
 
@@ -167,26 +165,30 @@ render.yaml          # Render deploy config
    - The browser provides local echo (characters appear as you type).
    - If Google Sheets isn’t configured, the app can still run in demo mode.
 
-### Deploy on Render
-- Push the repo to Git.
-- Create a new “Web Service” on Render, it will use `render.yaml`.
-- Set environment variable `CREDS` with your Google service account JSON content (do not commit creds.json).
-- Render will `pip3 install -r requirements.txt` and `npm install`, then start `npm start`.
+### Deploy on Render (Quick Guide)
+1. Commit and push your repo with these files:
+   - render.yaml
+   - apt.txt
+   - package.json
+   - requirements.txt
+   - index.js, controllers/default.js, views/*
+2. Create a new Web Service on https://render.com/:
+   - Select your Git repo.
+   - Render auto-detects render.yaml.
+3. Set environment variable:
+   - CREDS = full JSON content of your Google service account (one-line or multiline).
+   - Do NOT commit creds.json; rotate the key in GCP if it was committed.
+4. Deploy:
+   - Render installs Python (apt.txt), Python libs (requirements.txt), and Node deps (npm install).
+   - The app will start on PORT provided by Render.
+5. Open the service URL:
+   - Click “Run Program”.
+   - Type into the terminal; press Enter to submit.
 
-### Troubleshooting
-- Python not found:
-  - Install Python 3 and ensure it’s on PATH. On Windows, enable “Add python.exe to PATH” during install.
-- Keyboard not typing:
-  - Click inside the terminal to focus.
-  - The client uses a simple line editor; press Enter to submit input lines.
-- Output shows JSON digits like {"type":"Buffer", "data":[...]}:
-  - The server now sends UTF-8 strings; refresh the page (Ctrl+F5) to load the latest client.
-- Google Sheets disabled:
-  - The app will still run; set the `CREDS` environment variable to enable Sheets.
-
-### Security
-- Do not commit creds.json. Remove it from the repository and rotate the key in Google Cloud.
-- Prefer setting the `CREDS` environment variable in local/dev and production.
+Troubleshooting:
+- Python not found: Ensure apt.txt exists with python3 and python3-pip.
+- Google Sheets errors: The app still runs without Sheets; set CREDS to enable.
+- Keyboard input: Click inside the terminal to focus; the client uses local echo and sends lines on Enter.
 
 ## TESTING
 
