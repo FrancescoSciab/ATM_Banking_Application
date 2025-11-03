@@ -1,7 +1,16 @@
 # ATM Banking Application - Python
 
+Live site:
+- https://atm-banking-application.onrender.com/
+
+## Responsive preview (Am I Responsive)
+- Open responsive preview: https://ui.dev/amiresponsive?url=https%3A%2F%2Fatm-banking-application.onrender.com%2F
+- Note: Am I Responsive requires a public URL (it won’t load localhost).
+  ![Responsive Preview](img/Amiresponsive.png)
+
 ## Table of Contents
 - [ATM Banking Application - Python](#atm-banking-application---python)
+  - [Responsive preview (Am I Responsive)](#responsive-preview-am-i-responsive)
   - [Table of Contents](#table-of-contents)
   - [OVERVIEW](#overview)
     - [Under the hood of ATM software](#under-the-hood-of-atm-software)
@@ -24,7 +33,9 @@
       - [Customization tips](#customization-tips)
     - [File Structure:](#file-structure)
     - [Usage (Localhost)](#usage-localhost)
-    - [Deploy on Render (Quick Guide)](#deploy-on-render-quick-guide)
+    - [Deploy on Render](#deploy-on-render)
+    - [Troubleshooting](#troubleshooting)
+    - [Security](#security)
   - [TESTING](#testing)
   - [UNIT TESTING](#unit-testing)
 
@@ -105,17 +116,17 @@ The main controller handles the web interface and terminal integration.
 
 #### Key Components:
 - WebSocket Connection: real-time communication between the web client and the Python process.
-- Child Process: uses Node’s child_process.spawn to run Python (`python -u run.py`) and pipe stdin/stdout/stderr.
+- Child Process: uses Node’s child_process.spawn to run Python (`python -u run.py`) and pipe stdin/stdout/stderr. No node-pty needed.
 - Credential Management: optionally writes creds.json from the CREDS environment variable at startup.
 
 #### WebSocket Functionality:
 - Process Spawning: each connection starts a new Python process in unbuffered mode (`-u`) with UTF-8 (`PYTHONIOENCODING=utf-8`).
-- Real-time Output: Python stdout/stderr are forwarded to the browser as UTF-8 strings.
-- Input Handling: browser keystrokes are sent over WebSocket and written to Python stdin (CR is normalized to LF for input()).
+- Real-time Output: Python stdout/stderr are forwarded to the browser as UTF-8 strings (not Buffers).
+- Input Handling: browser keystrokes are sent over WebSocket and written to Python stdin (CR normalized to LF for input()).
 - Raw Mode: WebSocket runs in raw mode with encode/decode disabled to pass exact bytes when needed.
 
 #### Data Flow:
-1. Client opens WebSocket to the root path `/`.
+1. Client opens WebSocket to `/`.
 2. Server spawns Python (`run.py`).
 3. Server forwards Python output to client.
 4. Client sends user input back to server; server writes it to Python stdin.
@@ -124,12 +135,11 @@ The main controller handles the web interface and terminal integration.
 #### Security Features:
 - Automatic cleanup on disconnect.
 - Optional credentials initialization from environment variables.
-- No credentials are required to run in “demo mode” (when Google Sheets is unavailable).
+- Runs in “demo mode” without Google Sheets if CREDS is not provided.
 
 ### Views Layer (views/)
 - layout.html
-  - Base layout + xterm.js from CDN.
-  - Global styles and background.
+  - Base layout + xterm.js from CDN, page styles/background.
 - index.html
   - Renders the “Run Program” button and terminal container.
   - Manually wires WebSocket and xterm (no attach addon) and implements a minimal “local echo” line editor:
@@ -139,7 +149,7 @@ The main controller handles the web interface and terminal integration.
 
 #### Customization tips
 - Terminal size: change cols/rows in index.html Terminal({...}).
-- Styles and background: edit CSS in layout.html.
+- Styles/background: edit CSS in layout.html.
 
 ### File Structure:
 ```
@@ -149,46 +159,47 @@ views/
   ├── layout.html    # Base layout + xterm includes/styles
   └── index.html     # Terminal UI + manual WS wiring + local echo
 run.py               # Python ATM app (Google Sheets optional)
-index.js             # Total.js server entry
+index.js             # Total.js server entry (binds localhost locally, 0.0.0.0 on Render)
 requirements.txt     # Python libs for Sheets integration
-render.yaml          # Render deploy config
+render.yaml          # Render deploy config (npm install + pip install)
+apt.txt              # Ensures Python on Render Node runtime
 ```
 
 ### Usage (Localhost)
-1. Install Node 16+ and Python 3 on your PATH (verify: `python --version` or `python3 --version`).
-2. Install Node deps:
-   - `npm install`
-3. Start the server:
-   - `npm start`
-4. Open http://localhost:3000
-5. Click “Run Program”, click inside the terminal, type your input, and press Enter.
-   - The browser provides local echo (characters appear as you type).
-   - If Google Sheets isn’t configured, the app can still run in demo mode.
+- Requirements: Node 20.x, Python 3 on PATH.
+- Install: npm install
+- Start: npm start
+- Open: http://localhost:3000
+- Click “Run Program”, click inside the terminal, type input and press Enter.
+- If Google Sheets isn’t configured, the app runs in demo mode.
 
-### Deploy on Render (Quick Guide)
-1. Commit and push your repo with these files:
-   - render.yaml
-   - apt.txt
-   - package.json
-   - requirements.txt
-   - index.js, controllers/default.js, views/*
-2. Create a new Web Service on https://render.com/:
-   - Select your Git repo.
-   - Render auto-detects render.yaml.
-3. Set environment variable:
-   - CREDS = full JSON content of your Google service account (one-line or multiline).
-   - Do NOT commit creds.json; rotate the key in GCP if it was committed.
-4. Deploy:
-   - Render installs Python (apt.txt), Python libs (requirements.txt), and Node deps (npm install).
-   - The app will start on PORT provided by Render.
-5. Open the service URL:
-   - Click “Run Program”.
-   - Type into the terminal; press Enter to submit.
+### Deploy on Render
+- Repo contains:
+  - render.yaml (runs npm install and pip install)
+  - apt.txt (installs python3 and python3-pip on Render Node runtime)
+  - package.json (engines.node = 20.x to use LTS)
+- Steps:
+  1) Push changes to your Git repo.
+  2) Create a Web Service on https://render.com/ using your repo. Render will detect render.yaml.
+  3) Set env var CREDS with your Google service account JSON value (do not commit creds.json).
+  4) Deploy. Render will install Node deps and Python deps, then start node index.js.
+  5) Open your Render URL (example: https://atm-banking-application.onrender.com/), click “Run Program”.
 
-Troubleshooting:
-- Python not found: Ensure apt.txt exists with python3 and python3-pip.
-- Google Sheets errors: The app still runs without Sheets; set CREDS to enable.
-- Keyboard input: Click inside the terminal to focus; the client uses local echo and sends lines on Enter.
+### Troubleshooting
+- Cannot find module 'total4':
+  - Ensure npm install ran on Render (render.yaml buildCommand runs npm ci || npm install). Engines pinned to Node 20.x in package.json.
+- Python not found:
+  - apt.txt must contain python3 and python3-pip (already included).
+- Keyboard not typing:
+  - Click inside the terminal to focus. The client uses a simple local echo and sends the line on Enter.
+- Buffer JSON digits in output:
+  - Refresh the page; server sends UTF-8 strings, not Buffers.
+- Google Sheets disabled:
+  - App continues in demo mode. Provide CREDS env var to enable Sheets.
+
+### Security
+- Do not commit creds.json. Remove it from the repo history and rotate the key in Google Cloud if exposed.
+- Prefer using the CREDS environment variable locally and in production.
 
 ## TESTING
 
