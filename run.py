@@ -1,49 +1,39 @@
 import sys
 import os
 import json
+from cardHolder import API
 
-# Google Sheets is optional
+# Import the API class and test the connection
+api = None
 try:
-    import gspread
-    from google.oauth2.service_account import Credentials
-    GOOGLE_OK = True
+    from cardHolder import API
+    api = API()
+    if api == None:
+        print(f"[WARN] Google APIs unavailable")
 except Exception as e:
-    print(f"[WARN] Google APIs unavailable: {e}")
-    gspread = Credentials = None
-    GOOGLE_OK = False
+    print(f"[WARN] Failed to import API: {e}")
+
+# Import necessary classes
+# If any are unsuccessful assign api to "None" so the program wont continue
+try:
+    from cardHolder import Account
+except Exception as e:
+    print(f"[WARN] Failed to import Account: {e}")
+    api = None
 
 try:
-    from cardHolder import cardHolder
+    from cardHolder import AccountHolder
 except Exception as e:
-    print(f"[WARN] Failed to import cardHolder: {e}")
-    class cardHolder:  # noqa: N801
-        pass
+    print(f"[WARN] Failed to import AccountHolder: {e}")
+    api = None
 
-SCOPE = [
-    "https://www.googleapis.com/auth/spreadsheets",
-    "https://www.googleapis.com/auth/drive.file",
-    "https://www.googleapis.com/auth/drive",
-]
+try:
+    from cardHolder import ATMCard
+except Exception as e:
+    print(f"[WARN] Failed to import ATMCard: {e}")
+    api = None
 
-SHEET = None
-if GOOGLE_OK:
-    try:
-        # Prefer CREDS env var in Render/local; fallback to creds.json if present
-        if os.environ.get("CREDS"):
-            info = json.loads(os.environ["CREDS"])
-            creds = Credentials.from_service_account_info(info)
-        elif os.path.exists("creds.json"):
-            creds = Credentials.from_service_account_file("creds.json")
-        else:
-            raise FileNotFoundError("No Google credentials provided (CREDS env or creds.json)")
 
-        scoped = creds.with_scopes(SCOPE)
-        client = gspread.authorize(scoped)
-        SHEET = client.open("client_database")
-    except Exception as e:
-        print(f"[WARN] Google Sheets disabled: {e}")
-else:
-    print("[WARN] Google libraries not available; running without Sheets.")
 
 def print_banner():
     CYAN = "\033[1;36m"
@@ -93,5 +83,5 @@ def main():
             print("Invalid option. Please choose 1-4.")
     return
 
-if __name__ == "__main__":
+if api != None:
     main()

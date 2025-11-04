@@ -9,7 +9,6 @@ def formatFloatFromServer(numberToConvert):
         numberToConvert=str(numberToConvert).replace(',','.')
         return numberToConvert
 
-
 class API:
     # Initialise the API class
     # The connection can be verified by checking that the instance is not None    
