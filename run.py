@@ -61,7 +61,8 @@ def print_menu():
     print("1. Check Balance")
     print("2. Withdraw Funds")
     print("3. Deposit Funds")
-    print("4. Exit")
+    print("4. Change PIN")
+    print("5. Exit")
 
 def main():
     print_banner()
@@ -74,13 +75,100 @@ def main():
             print("\nGoodbye!")
             break
 
-        if choice in ("4", "quit", "exit"):
+        if choice in ("5", "quit", "exit"):
             print("Goodbye!")
             break
-        elif choice in {"1", "2", "3"}:
-            print(f"You selected {choice}. This feature is not implemented yet.")
+        elif choice in {"1", "2", "3", "4"}:
+            # For all these options we first ask for card number and pin
+            try:
+                card_num = input("Card number: ").strip()
+                pin = input("PIN: ").strip()
+            except (EOFError, KeyboardInterrupt):
+                print("\nOperation cancelled")
+                continue
+
+            try:
+                cards = api.getATMCards(card_num)
+            except Exception as e:
+                print(f"Error looking up card: {e}")
+                continue
+
+            if not cards:
+                print("Card not found.")
+                continue
+
+            card = cards[0]
+
+            # Authenticate
+            if not card.verify_pin(pin):
+                print("Incorrect PIN.")
+                # Optionally show failed tries
+                try:
+                    print(f"Failed tries: {card.getFailedTries()}")
+                except:
+                    pass
+                continue
+
+            # Authenticated: handle actions
+            if choice == "1":
+                bal = card.check_balance()
+                if bal is None:
+                    print("Could not retrieve balance.")
+                else:
+                    print(f"Current balance: {bal:.2f}")
+
+            elif choice == "2":
+                try:
+                    amt = float(input("Amount to withdraw: ").strip())
+                except Exception:
+                    print("Invalid amount")
+                    continue
+                if amt <= 0:
+                    print("Amount must be positive")
+                    continue
+                success = card.withdraw(amt)
+                if success:
+                    print(f"Withdrawn {amt:.2f}. New balance: {card.check_balance():.2f}")
+                else:
+                    print("Withdrawal failed (insufficient funds or server error).")
+
+            elif choice == "3":
+                try:
+                    amt = float(input("Amount to deposit: ").strip())
+                except Exception:
+                    print("Invalid amount")
+                    continue
+                if amt <= 0:
+                    print("Amount must be positive")
+                    continue
+                success = card.deposit(amt)
+                if success:
+                    print(f"Deposited {amt:.2f}. New balance: {card.check_balance():.2f}")
+                else:
+                    print("Deposit failed (server error).")
+
+            elif choice == "4":
+                try:
+                    new_pin = input("Enter new PIN: ").strip()
+                    confirm = input("Confirm new PIN: ").strip()
+                except Exception:
+                    print("Input cancelled")
+                    continue
+                if new_pin != confirm:
+                    print("PIN mismatch. Try again.")
+                    continue
+                if not new_pin.isdigit():
+                    print("PIN must be numeric")
+                    continue
+                success = card.change_pin(new_pin)
+                if success:
+                    print("PIN changed successfully.")
+                else:
+                    print("Failed to change PIN.")
+            else:
+                print("Unhandled option")
         else:
-            print("Invalid option. Please choose 1-4.")
+            print("Invalid option. Please choose 1-5.")
     return
 
 if api != None:

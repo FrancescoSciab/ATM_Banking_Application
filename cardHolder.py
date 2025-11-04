@@ -246,6 +246,82 @@ class ATMCard(Account):
             return False
         return False
 
+    # Verify a provided pin against this card's pin
+    # Resets failed tries on success, increments on failure
+    # @pin - provided pin (str or int)
+    # Returns True if pin matches, False otherwise
+    def verify_pin(self, pin):
+        try:
+            if str(pin) == str(self.pin):
+                # successful login: reset failed tries
+                try:
+                    self.resetFailedTries()
+                except:
+                    pass
+                return True
+            else:
+                try:
+                    self.increaseFailedTries()
+                except:
+                    pass
+                return False
+        except Exception:
+            return False
+
+    # Return the current account balance as a float
+    def check_balance(self):
+        try:
+            return float(formatFloatFromServer(self.accountBalance))
+        except Exception:
+            return None
+
+    # Withdraw funds from the account
+    # @amount - positive float amount to withdraw
+    # Returns True on success, False otherwise
+    def withdraw(self, amount):
+        try:
+            cur_bal = float(formatFloatFromServer(self.accountBalance))
+            amt = float(amount)
+            if amt <= 0:
+                return False
+            if amt > cur_bal:
+                return False
+            # decrease balance by amount
+            success = self.increaseBalance(-amt)
+            if success:
+                # update local value
+                self.accountBalance = str(cur_bal - amt)
+                return True
+            return False
+        except Exception:
+            return False
+
+    # Deposit funds into the account
+    # @amount - positive float amount to deposit
+    # Returns True on success, False otherwise
+    def deposit(self, amount):
+        try:
+            amt = float(amount)
+            if amt <= 0:
+                return False
+            cur_bal = float(formatFloatFromServer(self.accountBalance))
+            success = self.increaseBalance(amt)
+            if success:
+                self.accountBalance = str(cur_bal + amt)
+                return True
+            return False
+        except Exception:
+            return False
+
+    # Change PIN for this card. Caller should have verified old_pin already.
+    # @newPin - new pin as string or int
+    # Returns True on success, False otherwise
+    def change_pin(self, newPin):
+        try:
+            return self.setPin(newPin)
+        except Exception:
+            return False
+
 
 
 
