@@ -9,6 +9,86 @@ def formatFloatFromServer(numberToConvert):
         numberToConvert=str(numberToConvert).replace(',','.')
         return numberToConvert
 
+def _parse_balance_str(val):
+    """
+    Accepts values like '3 649,30', '557,22', '150.79' or numeric and returns float.
+    """
+    try:
+        if isinstance(val, (int, float)):
+            return float(val)
+        s = str(val).replace('\xa0', '').replace(' ', '')
+        s = s.replace(',', '.')
+        return float(s)
+    except Exception:
+        return 0.0
+
+class ClientRecord:
+    """
+    Simple container for a row in the 'client' worksheet:
+    [cardNum, pin, firstName, lastName, balance]
+    """
+    def __init__(self, card_num, pin, first_name, last_name, balance):
+        self.cardNum = str(card_num).strip()
+        self.pin = str(pin).strip()
+        self.firstName = first_name
+        self.lastName = last_name
+        self.balance = _parse_balance_str(balance)
+
+class SimpleClientRepo:
+    """
+    Minimal repository for a single worksheet named 'client' with columns:
+    cardNum | pin | firstName | lastName | balance
+    """
+    def __init__(self, creds_json_path="creds.json", spreadsheet_name="client_database"):
+        # Try to init Google client; raise if unavailable
+        self.SCOPE = [
+            "https://www.googleapis.com/auth/spreadsheets",
+            "https://www.googleapis.com/auth/drive.file",
+            "https://www.googleapis.com/auth/drive",
+        ]
+        self.CREDS = Credentials.from_service_account_file(creds_json_path)
+        self.SCOPED = self.CREDS.with_scopes(self.SCOPE)
+        self.CLIENT = gspread.authorize(self.SCOPED)
+        self.SHEET = self.CLIENT.open(spreadsheet_name)
+
+    def _ws(self):
+        return self.SHEET.worksheet("client")
+
+    def get_record(self, card_num):
+        rows = self._ws().get_all_values()
+        if not rows:
+            return None
+        header = rows[0]
+        # Expecting header: ['cardNum', 'pin', 'firstName', 'lastName', 'balance']
+        for row in rows[1:]:
+            if str(row[0]).strip() == str(card_num).strip():
+                return ClientRecord(row[0], row[1], row[2], row[3], row[4])
+        return None
+
+    def verify(self, card_num, pin):
+        rec = self.get_record(card_num)
+        if not rec:
+            return False
+        return str(rec.pin) == str(pin)
+
+    def update_balance(self, card_num, new_balance):
+        ws = self._ws()
+        cell = ws.find(str(card_num).strip())
+        if not cell:
+            return False
+        # Update column 5 (balance). Store as number.
+        ws.update_cell(cell.row, 5, float(new_balance))
+        return True
+
+    def update_pin(self, card_num, new_pin):
+        ws = self._ws()
+        cell = ws.find(str(card_num).strip())
+        if not cell:
+            return False
+        # Update column 2 (pin)
+        ws.update_cell(cell.row, 2, str(new_pin))
+        return True
+
 class API:
     # Initialise the API class
     # The connection can be verified by checking that the instance is not None    
@@ -41,7 +121,7 @@ class API:
                 return_list_of_accountHolders.append(AccountHolder(holder[0],holder[1],holder[2],holder[3]))
         return return_list_of_accountHolders
     
-    # Get a list of all accounts, or just 1 by searching by "Account ID"
+    # Get a list of all accounts, or just 1 by searching with "Account ID"
     # @id - set as 0 to retrieve all accounts, or any other number to retrieve 1
     # Returns an array of type "Account"
     # The length of the returned array will be 0 if no Accounts are found
