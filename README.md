@@ -170,36 +170,38 @@ apt.txt              # Ensures Python on Render Node runtime
 - Install: npm install
 - Start: npm start
 - Open: http://localhost:3000
-- Click “Run Program”, click inside the terminal, type input and press Enter.
+- Click “Run Program”, type your card number and PIN, press Enter, then use the menu.
 - If Google Sheets isn’t configured, the app runs in demo mode.
 
 ### Deploy on Render
-- Repo contains:
+- Repo includes:
   - render.yaml (runs npm install and pip install)
-  - apt.txt (installs python3 and python3-pip on Render Node runtime)
-  - package.json (engines.node = 20.x to use LTS)
+  - apt.txt (installs python3 and python3-pip)
+  - package.json (engines.node = 20.x)
 - Steps:
-  1) Push changes to your Git repo.
-  2) Create a Web Service on https://render.com/ using your repo. Render will detect render.yaml.
-  3) Set env var CREDS with your Google service account JSON value (do not commit creds.json).
-  4) Deploy. Render will install Node deps and Python deps, then start node index.js.
-  5) Open your Render URL (example: https://atm-banking-application.onrender.com/), click “Run Program”.
+  1) Push to GitHub.
+  2) Create a Web Service on https://render.com/ using your repo (Render auto-detects render.yaml).
+  3) Add env var CREDS with your service account JSON (do not commit creds.json).
+  4) Deploy, then open the live URL: https://atm-banking-application.onrender.com/
 
 ### Troubleshooting
-- Cannot find module 'total4':
-  - Ensure npm install ran on Render (render.yaml buildCommand runs npm ci || npm install). Engines pinned to Node 20.x in package.json.
-- Python not found:
-  - apt.txt must contain python3 and python3-pip (already included).
-- Keyboard not typing:
-  - Click inside the terminal to focus. The client uses a simple local echo and sends the line on Enter.
-- Buffer JSON digits in output:
-  - Refresh the page; server sends UTF-8 strings, not Buffers.
+- Card not found:
+  - Ensure spreadsheet name is client_database and the worksheet is named client (for simple schema).
+  - Verify header columns exactly: cardNum | pin | firstName | lastName | balance.
+  - Share the sheet with the service account email from your JSON.
+  - If using the full multi-sheet schema, ensure rows exist in account, accountHolder, and atmCards with correct relations.
+- Incorrect PIN even when correct:
+  - Check that the pin cell is Plain text and not auto-formatted.
+- Keyboard doesn’t type:
+  - Click inside the terminal; local echo will show characters; press Enter to submit a line.
 - Google Sheets disabled:
-  - App continues in demo mode. Provide CREDS env var to enable Sheets.
+  - Provide CREDS env var (preferred) or a local creds.json for development.
+- Module not found (total4) on Render:
+  - package.json pins Node 20.x and render.yaml runs npm install during build.
 
 ### Security
-- Do not commit creds.json. Remove it from the repo history and rotate the key in Google Cloud if exposed.
-- Prefer using the CREDS environment variable locally and in production.
+- Do not commit creds.json. Remove it from the repository and rotate keys in Google Cloud if it was exposed.
+- Prefer using the CREDS environment variable for both local and production.
 
 ## TESTING
 
