@@ -181,15 +181,23 @@ apt.txt              # Ensures Python on Render Node runtime
 - Steps:
   1) Push to GitHub.
   2) Create a Web Service on https://render.com/ using your repo (Render auto-detects render.yaml).
-  3) Add env var CREDS with your service account JSON (do not commit creds.json).
-  4) Deploy, then open the live URL: https://atm-banking-application.onrender.com/
+  3) In Environment > Secret Files add a file named creds.json and paste the full Google service account JSON. Save (mounted at /etc/secrets/creds.json).
+   ![Secret file on Render](img/Secret-file-on-render.png)
+  4) Add env var GOOGLE_APPLICATION_CREDENTIALS=/etc/secrets/creds.json.
+     - If your code expects ./creds.json, set the Start Command to copy before launch:
+       bash -lc 'cp /etc/secrets/creds.json ./creds.json && npm start'
+  5) Share your Google Sheet with the service account email from the JSON.
+  6) Deploy and open the live URL: https://atm-banking-application.onrender.com/
 
 ### Troubleshooting
 - Card not found:
-  - Ensure spreadsheet name is client_database and the worksheet is named client (for simple schema).
-  - Verify header columns exactly: cardNum | pin | firstName | lastName | balance.
-  - Share the sheet with the service account email from your JSON.
-  - If using the full multi-sheet schema, ensure rows exist in account, accountHolder, and atmCards with correct relations.
+  - Ensure spreadsheet name is client_database and worksheet is client (or your schema).
+  - Verify headers: cardNum | pin | firstName | lastName | balance.
+  - Share the sheet with the service account email.
+  - On Render, confirm:
+    - Secret File creds.json exists (Environment > Secret Files).
+    - GOOGLE_APPLICATION_CREDENTIALS=/etc/secrets/creds.json is set.
+    - If reading ./creds.json, the Start Command copies the secret file.
 - Incorrect PIN even when correct:
   - Check that the pin cell is Plain text and not auto-formatted.
 - Keyboard doesn’t type:
@@ -200,8 +208,9 @@ apt.txt              # Ensures Python on Render Node runtime
   - package.json pins Node 20.x and render.yaml runs npm install during build.
 
 ### Security
-- Do not commit creds.json. Remove it from the repository and rotate keys in Google Cloud if it was exposed.
-- Prefer using the CREDS environment variable for both local and production.
+- Do not commit creds.json to the repo; it’s already gitignored.
+- Use Render Secret Files + GOOGLE_APPLICATION_CREDENTIALS to keep keys out of source control.
+- Rotate the key in Google Cloud if it was ever exposed.
 
 ## TESTING
 
