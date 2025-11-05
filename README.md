@@ -34,6 +34,7 @@ Live site:
     - [File Structure:](#file-structure)
     - [Usage (Localhost)](#usage-localhost)
     - [Deploy on Render](#deploy-on-render)
+      - [Render Free Plan Setup (step-by-step)](#render-free-plan-setup-step-by-step)
     - [Troubleshooting](#troubleshooting)
     - [Security](#security)
   - [TESTING](#testing)
@@ -178,16 +179,33 @@ apt.txt              # Ensures Python on Render Node runtime
   - render.yaml (runs npm install and pip install)
   - apt.txt (installs python3 and python3-pip)
   - package.json (engines.node = 20.x)
-- Steps:
-  1) Push to GitHub.
-  2) Create a Web Service on https://render.com/ using your repo (Render auto-detects render.yaml).
-  3) In Environment > Secret Files add a file named creds.json and paste the full Google service account JSON. Save (mounted at /etc/secrets/creds.json).
-   ![Secret file on Render](img/Secret-file-on-render.png)
-  4) Add env var GOOGLE_APPLICATION_CREDENTIALS=/etc/secrets/creds.json.
-     - If your code expects ./creds.json, set the Start Command to copy before launch:
-       bash -lc 'cp /etc/secrets/creds.json ./creds.json && npm start'
-  5) Share your Google Sheet with the service account email from the JSON.
-  6) Deploy and open the live URL: https://atm-banking-application.onrender.com/
+
+#### Render Free Plan Setup (step-by-step)
+1) Push your repo to GitHub.
+2) In Render, click New > Web Service and connect your GitHub repo (Render auto-detects render.yaml).
+3) Set service basics:
+   - Name: atm-banking-application (or any).
+   - Branch: main (or your branch).
+4) Choose Instance Type: select Free.
+   - Free = 512 MB RAM, 0.1 CPU. It sleeps after inactivity and has cold starts (no SSH/persistent disk).
+   - Screenshot:
+     ![Render Free plan selection](img/web-service-plan.png)
+5) Environment > Secret Files:
+   - Add Secret File named creds.json and paste your entire Google service account JSON.
+   - It will be mounted at: /etc/secrets/creds.json
+   - Screenshot (Secret File example already in README):
+     ![Secret file on Render](img/Secret-file-on-render.png)
+6) Environment > Environment Variables:
+   - Add GOOGLE_APPLICATION_CREDENTIALS=/etc/secrets/creds.json
+   - Optional (if your code expects a local creds.json): set Start Command to copy before starting:
+     bash -lc 'cp /etc/secrets/creds.json ./creds.json && npm start'
+7) Share your Google Sheet with the service account email from the JSON.
+8) Click Create Web Service to deploy. After build finishes, open the URL and test:
+   - Insert Your Card, then PIN, and proceed through the menu.
+9) Notes for Free plan:
+   - Service sleeps after inactivity; first request can take ~30–60s (cold start).
+   - If memory usage exceeds 512 MB the service may be OOM-killed; reduce dependencies/logging if needed.
+   - For faster startups or SSH access, upgrade to a paid instance.
 
 ### Troubleshooting
 - Card not found:
@@ -198,6 +216,7 @@ apt.txt              # Ensures Python on Render Node runtime
     - Secret File creds.json exists (Environment > Secret Files).
     - GOOGLE_APPLICATION_CREDENTIALS=/etc/secrets/creds.json is set.
     - If reading ./creds.json, the Start Command copies the secret file.
+  - On Free plan, a cold start can delay Google auth; wait for the first auth attempt to complete.
 - Incorrect PIN even when correct:
   - Check that the pin cell is Plain text and not auto-formatted.
 - Keyboard doesn’t type:
@@ -208,7 +227,7 @@ apt.txt              # Ensures Python on Render Node runtime
   - package.json pins Node 20.x and render.yaml runs npm install during build.
 
 ### Security
-- Do not commit creds.json to the repo; it’s already gitignored.
+- Do not commit creds.json to the repo; it’s gitignored.
 - Use Render Secret Files + GOOGLE_APPLICATION_CREDENTIALS to keep keys out of source control.
 - Rotate the key in Google Cloud if it was ever exposed.
 
