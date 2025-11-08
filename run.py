@@ -1,7 +1,7 @@
 import sys
 import os
 import json
-from cardHolder import API
+from cardHolder import API, transfer_money
 
 # Import the API class and test the connection
 api = None
@@ -69,7 +69,8 @@ def print_menu():
     print("2. Withdraw Funds")
     print("3. Deposit Funds")
     print("4. Change PIN")
-    print("5. Exit")
+    print("5. Transfer Money")
+    print("6. Exit")
 
 def authenticate(api):
     """Prompt for card and PIN first, return a tuple (source, obj) or None.
@@ -150,7 +151,7 @@ def main():
             print("\nGoodbye!")
             break
 
-        if choice in ("5", "quit", "exit"):
+        if choice in ("6", "quit", "exit"):
             print("Goodbye!")
             break
 
@@ -184,8 +185,10 @@ def main():
                 if new_pin != confirm: print("PIN mismatch. Try again."); continue
                 if not new_pin.isdigit(): print("PIN must be numeric"); continue
                 print("PIN changed successfully." if obj.change_pin(new_pin) else "Failed to change PIN.")
+            elif choice == "5":
+                transfer_money(obj, repo)
             else:
-                print("Invalid option. Please choose 1-5.")
+                print("Invalid option. Please choose 1-6.")
         else:
             # Single-sheet repo flow (ClientRecord)
             if choice == "1":
@@ -229,8 +232,10 @@ def main():
                     print("PIN changed successfully.")
                 else:
                     print("Failed to change PIN.")
+            elif choice == "5":
+                transfer_money(obj, repo)
             else:
-                print("Invalid option. Please choose 1-5.")
+                print("Invalid option. Please choose 1-6.")
     return
 
 if api != None or repo is not None:

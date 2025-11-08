@@ -9,6 +9,59 @@ def formatFloatFromServer(numberToConvert):
         numberToConvert=str(numberToConvert).replace(',','.')
         return numberToConvert
 
+def transfer_money(source_obj, repo):
+    print("\n" + "="*40)
+    print("      MONEY TRANSFER")
+    print("="*40)
+    
+    try:
+        amount = float(input("Amount to transfer: $").strip().replace(',', ''))
+        if amount <= 0:
+            print("Amount must be positive.")
+            return
+        if amount > source_obj.balance:
+            print("Insufficient funds!")
+            return
+    except:
+        print("Invalid amount.")
+        return
+
+    print("\nEnter recipient card number:")
+    dest_card = input("→ ").strip()
+
+    if dest_card == source_obj.cardNum:
+        print("You cannot transfer to yourself!")
+        return
+
+    # Find recipient
+    dest_rec = repo.get_record(dest_card)
+    if not dest_rec:
+        print("Recipient card not found!")
+        return
+
+    # Confirm
+    print(f"\nSend ${amount:,.2f} to:")
+    print(f"   {dest_rec.firstName} {dest_rec.lastName}")
+    print(f"   Card: {dest_rec.cardNum}")
+    confirm = input("\nConfirm? (y/n): ").strip().lower()
+    if confirm != 'y':
+        print("Transfer cancelled.")
+        return
+
+    # Perform transfer
+    if (repo.update_balance(source_obj.cardNum, source_obj.balance - amount) and
+        repo.update_balance(dest_rec.cardNum, dest_rec.balance + amount)):
+        
+        # Update local objects
+        source_obj.balance -= amount
+        dest_rec.balance += amount
+        
+        print(f"\nSUCCESS! Transferred ${amount:,.2f}")
+        print(f"To: {dest_rec.firstName} {dest_rec.lastName}")
+        print(f"Your new balance: ${source_obj.balance:,.2f}")
+    else:
+        print("Transfer failed. Try again.")
+        
 def _parse_balance_str(val):
     """
     Accepts values like '3 649,30', '557,22', '150.79' or numeric and returns float.
