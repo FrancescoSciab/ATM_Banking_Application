@@ -1,7 +1,7 @@
 import sys
 import os
 import json
-from cardHolder import API, transfer_money
+from cardHolder import API, show_welcome_message, transfer_money
 
 # Import the API class and test the connection
 api = None
@@ -142,6 +142,13 @@ def main():
         return
 
     source, obj = auth
+
+    # Show welcome message
+    if source == 'repo':
+        show_welcome_message(obj)
+    elif source == 'api':
+        print(f"\nWelcome back! Card ending in {obj.getCardNumber()[-4:]}")
+        print(f"Balance: ${obj.check_balance():,.2f}\n")
 
     while True:
         print_menu()

@@ -61,6 +61,16 @@ def transfer_money(source_obj, repo):
         print(f"Your new balance: ${source_obj.balance:,.2f}")
     else:
         print("Transfer failed. Try again.")
+
+def show_welcome_message(client):
+    print("\n" + "═" * 50)
+    print("       WELCOME TO YOUR ACCOUNT")
+    print("═" * 50)
+    print(f"   Holder: {client.firstName} {client.lastName}")
+    print(f"   Card:   {client.cardNum[-4:]:0>4}  (**** **** **** {client.cardNum[-4:]})")
+    print(f"   Balance: ${client.balance:,.2f}")
+    print("═" * 50)
+    print("   What would you like to do today?\n")
         
 def _parse_balance_str(val):
     """
