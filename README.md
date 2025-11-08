@@ -58,6 +58,8 @@ This application simulates a real ATM banking system with a web-based terminal i
 - **Communication**: WebSocket for real-time terminal interaction
 - **Deployment**: Render.com with automatic builds
 
+[Back to Table of Contents](#table-of-contents)
+
 ## ATM System Architecture
 
 ### Understanding ATM Hardware
@@ -113,6 +115,8 @@ Each operational state (001-999) defines:
 - `001`: Success transition state
 - `011`: Error transition state
 - Additional parameters for specific operations
+
+[Back to Table of Contents](#table-of-contents)
 
 ## Web Interface Architecture
 
@@ -173,6 +177,8 @@ python = spawn('python', ['-u', 'run.py'], {
 ├── apt.txt                 # System packages for Render
 └── README.md               # This documentation
 ```
+
+[Back to Table of Contents](#table-of-contents)
 
 ## Installation & Setup
 
@@ -242,6 +248,8 @@ npm start
    cp path/to/your/service-account.json creds.json
    ```
 
+[Back to Table of Contents](#table-of-contents)
+
 ## Deployment
 
 ### Render Free Plan Setup
@@ -286,6 +294,8 @@ npm start
    - Click "Create Web Service"
    - Wait for build completion
    - Test your deployed application
+
+[Back to Table of Contents](#table-of-contents)
 
 ## Usage
 
@@ -477,6 +487,8 @@ The application includes comprehensive error handling for:
 
 > **Note**: This is a demonstration application. All test accounts are for educational purposes only. In production, additional security measures including encryption, audit logging, and regulatory compliance would be required.
 
+[Back to Table of Contents](#table-of-contents)
+
 ## Testing
 
 ### Unit Testing
@@ -545,6 +557,8 @@ Test the complete workflow:
    - Error handling scenarios
    - Session management
 
+[Back to Table of Contents](#table-of-contents)
+
 ## Troubleshooting
 
 ### Common Issues
@@ -599,6 +613,8 @@ If you encounter issues:
    - Check data format
    - Verify sharing permissions
 
+[Back to Table of Contents](#table-of-contents)
+
 ## Security
 
 ### Best Practices
@@ -616,6 +632,8 @@ If you encounter issues:
 - **Process isolation**: Each session runs in separate Python process
 - **Credential management**: Secure handling of authentication tokens
 - **Input validation**: Protection against injection attacks
+
+[Back to Table of Contents](#table-of-contents)
 
 ## Contributing
 
@@ -635,6 +653,40 @@ We welcome contributions! Please follow these guidelines:
 - Update documentation for changes
 - Test both locally and on Render
 
+[Back to Table of Contents](#table-of-contents)
+
+## Acknowledgments
+
+We would like to express our sincere gratitude to the following individuals and institutions who made this project possible:
+
+### Academic Institution
+- **[Atlantic Technological University (ATU)](https://www.atu.ie/)** - BSc Honours in Contemporary Software Development Program
+- **ATU Donegal Campus** - For providing comprehensive support to our development team and offering individual assistance throughout all phases of the project
+
+### Educational Support
+- **ATU Donegal Tutor Support Team** - For their dedicated guidance and technical assistance
+- **Lusungu Mwasinga** - Our course instructor, for exceptional teaching and mentorship throughout the development process
+
+### Development Team
+Special thanks to our collaborative development team members who contributed to building this ATM Banking Application:
+
+- **Sergiy Kochenko** - Lead Developer & Project Coordinator
+- **[Team Member 2]** - [Role/Contribution]
+- **[Team Member 3]** - [Role/Contribution] 
+- **[Team Member 4]** - [Role/Contribution]
+
+### Technical Acknowledgments
+- **Google Cloud Platform** - For providing the Sheets API infrastructure
+- **Render.com** - For reliable hosting and deployment services
+- **Total.js Framework** - For the web application framework
+- **xterm.js** - For the terminal emulation library
+
+### Open Source Community
+This project builds upon the excellent work of the open-source community. We acknowledge all the developers and contributors whose libraries and frameworks made this application possible.
+
 ---
 
-**Note**: This application is for educational purposes and demonstrates ATM system concepts. For production banking applications, additional security measures, compliance requirements, and regulatory approvals would be necessary.
+## Note
+This application is for educational purposes and demonstrates ATM system concepts. For production banking applications, additional security measures, compliance requirements, and regulatory approvals would be necessary.
+
+[Back to Table of Contents](#table-of-contents)
