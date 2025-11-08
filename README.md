@@ -36,6 +36,7 @@ A web-based ATM banking simulation application built with Python and Node.js, fe
   - [Troubleshooting](#troubleshooting)
   - [Security](#security)
   - [Contributing](#contributing)
+  - [Acknowledgments](#acknowledgments)
 
 ## Overview
 
