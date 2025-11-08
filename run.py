@@ -150,7 +150,7 @@ def main():
         show_welcome_message(obj)
     elif source == 'api':
         print(f"\nWelcome back! Card ending in {obj.getCardNumber()[-4:]}")
-        print(f"Balance: ${obj.check_balance():,.2f}\n")
+        print(f"Balance: €{obj.check_balance():,.2f}\n")
 
     while True:
         print_menu()

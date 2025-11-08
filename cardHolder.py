@@ -15,7 +15,7 @@ def transfer_money(source_obj, repo):
     print("="*40)
     
     try:
-        amount = float(input("Amount to transfer: $").strip().replace(',', ''))
+        amount = float(input("Amount to transfer: €").strip().replace(',', ''))
         if amount <= 0:
             print("Amount must be positive.")
             return
@@ -40,7 +40,7 @@ def transfer_money(source_obj, repo):
         return
 
     # Confirm
-    print(f"\nSend ${amount:,.2f} to:")
+    print(f"\nSend €{amount:,.2f} to:")
     print(f"   {dest_rec.firstName} {dest_rec.lastName}")
     print(f"   Card: {dest_rec.cardNum}")
     confirm = input("\nConfirm? (y/n): ").strip().lower()
@@ -56,9 +56,9 @@ def transfer_money(source_obj, repo):
         source_obj.balance -= amount
         dest_rec.balance += amount
         
-        print(f"\nSUCCESS! Transferred ${amount:,.2f}")
+        print(f"\nSUCCESS! Transferred €{amount:,.2f}")
         print(f"To: {dest_rec.firstName} {dest_rec.lastName}")
-        print(f"Your new balance: ${source_obj.balance:,.2f}")
+        print(f"Your new balance: €{source_obj.balance:,.2f}")
     else:
         print("Transfer failed. Try again.")
 
@@ -68,7 +68,7 @@ def show_welcome_message(client):
     print("═" * 50)
     print(f"   Holder: {client.firstName} {client.lastName}")
     print(f"   Card:   {client.cardNum[-4:]:0>4}  (**** **** **** {client.cardNum[-4:]})")
-    print(f"   Balance: ${client.balance:,.2f}")
+    print(f"   Balance: €{client.balance:,.2f}")
     print("═" * 50)
     print("   What would you like to do today?\n")
         
