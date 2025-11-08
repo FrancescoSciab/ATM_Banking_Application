@@ -289,27 +289,193 @@ npm start
 
 ## Usage
 
-1. **Access the Terminal**:
-   - Navigate to your deployed URL or localhost:3000
-   - Click "Run Program" button
+### Getting Started
 
-2. **ATM Workflow**:
+1. **Access the Application**:
+   - Navigate to your deployed URL or http://localhost:3000
+   - Click "Run Program" button to start the ATM terminal
+
+2. **Authentication Process**:
    ```
-   Insert Your Card: [Enter card number]
-   Enter PIN: [Enter PIN code]
-   Main Menu:
+   ╔════════════════════════════════════════════════════════════════╗
+   ║                         Welcome to the ATM                     ║
+   ╚════════════════════════════════════════════════════════════════╝
+   
+   Insert Your Card: [Enter your 16-digit card number]
+   PIN: [Enter your 4-digit PIN]
+   ```
+
+3. **ATM Main Menu**:
+   After successful authentication, you'll see:
+   ```
+   ═══════════════════════════════════════════════════
+                WELCOME TO YOUR ACCOUNT
+   ═══════════════════════════════════════════════════
+      Holder: [First Name] [Last Name]
+      Card:   **** **** **** [Last 4 digits]
+      Balance: €[Current Balance]
+   ═══════════════════════════════════════════════════
+      What would you like to do today?
+
+   Please choose from one of the following options...
    1. Check Balance
-   2. Deposit Money
-   3. Withdraw Money
-   4. View Transaction History
-   5. Exit
+   2. Withdraw Funds
+   3. Deposit Funds
+   4. Change PIN
+   5. Transfer Money
+   6. Exit
    ```
 
-3. **Sample Test Data** (for development):
-   ```
-   Card: 1234567890123456
-   PIN: 1234
-   ```
+### Available Operations
+
+#### 1. Check Balance 💰
+- Displays your current account balance
+- Real-time data from Google Sheets
+- Shows balance in Euro (€) format with proper formatting
+
+#### 2. Withdraw Funds 💸
+- Enter amount to withdraw
+- Automatic validation for:
+  - Positive amounts only
+  - Sufficient funds check
+  - Real-time balance updates
+- Format: Enter amount like `100` or `100.50`
+
+#### 3. Deposit Funds 💵
+- Enter amount to deposit
+- Automatic validation for positive amounts
+- Real-time balance updates
+- Format: Enter amount like `50` or `75.25`
+
+#### 4. Change PIN 🔐
+- Enter new 4-digit PIN
+- Confirm new PIN (must match)
+- PIN must be numeric only
+- Immediate database update
+
+#### 5. Transfer Money 🔄
+- **New Feature**: Send money to other cardholders
+- Process:
+  ```
+  ==========================================
+            MONEY TRANSFER
+  ==========================================
+  Amount to transfer: €[Enter amount]
+  
+  Enter recipient card number:
+  → [Enter recipient's 16-digit card number]
+  
+  Send €[amount] to:
+     [Recipient Name]
+     Card: [Recipient Card Number]
+  
+  Confirm? (y/n): [y to confirm, n to cancel]
+  
+  SUCCESS! Transferred €[amount]
+  To: [Recipient Name]
+  Your new balance: €[New Balance]
+  ```
+
+#### 6. Exit 🚪
+- Safely terminates the session
+- Returns to main screen
+
+### Test Card Holders
+
+Use any of these sample accounts to test the application:
+
+| Card Number      | PIN  | First Name | Last Name     | Features Available |
+|------------------|------|------------|---------------|--------------------|
+| 4532772818527395 | 1234 | Sergiy     | Kochenko      | All operations     |
+| 4532761841325802 | 4321 | Oleg       | Dvoinisiuk    | All operations     |
+| 5128381368581872 | 6543 | Francesco  | Sciabbarrasi  | All operations     |
+| 6011188364697109 | 8765 | Brian      | McNamara      | All operations     |
+| 490693153147110  | 2040 | Anna       | Watson        | All operations     |
+
+### Sample Transaction Flow
+
+**Complete ATM Session Example**:
+```bash
+# 1. Start Application
+Insert Your Card: 4532772818527395
+PIN: 1234
+
+# 2. Welcome Screen
+═══════════════════════════════════════════════════
+             WELCOME TO YOUR ACCOUNT
+═══════════════════════════════════════════════════
+   Holder: Sergiy Kochenko
+   Card:   **** **** **** 7395
+   Balance: €1,250.75
+═══════════════════════════════════════════════════
+
+# 3. Check Balance
+> 1
+Current balance: €1,250.75
+
+# 4. Withdraw Money
+> 2
+Amount to withdraw: 100
+Withdrawn €100.00. New balance: €1,150.75
+
+# 5. Transfer Money
+> 5
+Amount to transfer: €50
+Enter recipient card number:
+→ 4532761841325802
+
+Send €50.00 to:
+   Oleg Dvoinisiuk
+   Card: 4532761841325802
+
+Confirm? (y/n): y
+
+SUCCESS! Transferred €50.00
+To: Oleg Dvoinisiuk
+Your new balance: €1,100.75
+
+# 6. Exit
+> 6
+Goodbye!
+```
+
+### Input Formats
+
+**Amounts**: 
+- Accepts: `100`, `100.50`, `100,50`, `1 250,75`
+- Automatically converts European format (comma as decimal)
+- Must be positive numbers
+
+**Card Numbers**: 
+- 16-digit format
+- No spaces or dashes required
+- Example: `4532772818527395`
+
+**PIN**: 
+- 4-digit numeric code
+- No spaces allowed
+- Example: `1234`
+
+### Error Handling
+
+The application includes comprehensive error handling for:
+
+- **Invalid Card**: "Card not found"
+- **Wrong PIN**: "Incorrect PIN" (max 3 attempts)
+- **Insufficient Funds**: "Withdrawal failed (insufficient funds)"
+- **Invalid Amount**: "Invalid amount" or "Amount must be positive"
+- **Transfer Errors**: "Recipient card not found" or "You cannot transfer to yourself"
+- **Server Errors**: "Failed to update database" or "Server connection error"
+
+### Security Features
+
+- **Session Isolation**: Each user gets a separate Python process
+- **PIN Verification**: Secure PIN validation with attempt limits
+- **Input Validation**: All inputs are sanitized and validated
+- **Real-time Updates**: Immediate database synchronization
+- **Transfer Confirmation**: Double confirmation for money transfers
+
+> **Note**: This is a demonstration application. All test accounts are for educational purposes only. In production, additional security measures including encryption, audit logging, and regulatory compliance would be required.
 
 ## Testing
 
@@ -459,7 +625,7 @@ We welcome contributions! Please follow these guidelines:
 2. **Create a feature branch**: `git checkout -b feature/amazing-feature`
 3. **Commit changes**: `git commit -m 'Add amazing feature'`
 4. **Push to branch**: `git push origin feature/amazing-feature`
-5. **Open a Pull Request**
+5. **Open a Pull Request`
 
 ### Development Guidelines
 
