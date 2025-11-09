@@ -83,6 +83,8 @@ A web-based ATM banking simulation application built with Python and Node.js, fe
   - [Security](#security)
     - [Best Practices](#best-practices)
     - [Security Features](#security-features-1)
+      - [PIN Masking Implementation](#pin-masking-implementation)
+      - [Additional Security Measures](#additional-security-measures)
   - [Contributing](#contributing)
     - [Development Guidelines](#development-guidelines)
   - [Acknowledgments](#acknowledgments)
@@ -100,14 +102,14 @@ This application simulates a real ATM banking system with a web-based terminal i
 ### Features
 
 - 🏧 **ATM Simulation**: Complete ATM workflow simulation
-- 🔐 **Authentication**: Secure card number and PIN verification
+- 🔐 **Authentication**: Secure card number and PIN verification with masked input
 - 💰 **Banking Operations**: Deposit, withdrawal, balance inquiry, and money transfers
 - 📊 **Google Sheets Integration**: Real-time data storage and retrieval
 - 🌐 **Web Terminal**: Browser-based terminal interface using xterm.js
 - 🔄 **Real-time Updates**: WebSocket-powered live communication
 - 📱 **Responsive Design**: Fully optimized for mobile phones, tablets, and desktops
 - 🎯 **Dynamic UI**: Terminal appears on-demand when starting a session
-- 🛡️ **Security**: Encrypted credentials and secure data handling
+- 🛡️ **Security**: PIN masking, encrypted credentials, and secure data handling
 - ♿ **Accessibility**: High contrast, keyboard navigation, and screen reader compatible
 
 ### Tech Stack
@@ -118,6 +120,7 @@ This application simulates a real ATM banking system with a web-based terminal i
 - **Communication**: WebSocket for real-time terminal interaction
 - **Deployment**: Render.com with automatic builds
 - **Responsive Framework**: Custom CSS media queries for all device sizes
+- **Security**: msvcrt module for Windows PIN masking
 
 [Back to Table of Contents](#table-of-contents)
 
@@ -418,8 +421,10 @@ npm start
    ╚════════════════════════════════════════════════════════════════╝
 
    Insert Your Card: [Enter your 16-digit card number]
-   PIN: [Enter your 4-digit PIN]
+   PIN: **** [PIN is masked with asterisks for security]
    ```
+
+   **Security Note**: PIN input is masked using asterisks (*) to protect your privacy. Each digit you type appears as an asterisk on the screen.
 
 3. **ATM Main Menu**:
    After successful authentication, you'll see:
@@ -582,7 +587,10 @@ Goodbye!
 
 - 4-digit numeric code
 - No spaces allowed
-- Example: `1234`
+- **Masked input**: Displays as asterisks (****) for security
+- Example: `1234` (appears as `****` when typing)
+- Supports backspace for corrections
+- Press Enter to submit
 
 ### Error Handling
 
@@ -597,11 +605,13 @@ The application includes comprehensive error handling for:
 
 ### Security Features
 
+- **PIN Masking**: Real-time masking of PIN input with asterisks (*) using `msvcrt` module
 - **Session Isolation**: Each user gets a separate Python process
-- **PIN Verification**: Secure PIN validation with attempt limits
+- **PIN Verification**: Secure PIN validation with attempt limits (max 3 attempts)
 - **Input Validation**: All inputs are sanitized and validated
 - **Real-time Updates**: Immediate database synchronization
 - **Transfer Confirmation**: Double confirmation for money transfers
+- **Backspace Support**: Secure PIN editing during input
 
 ### Responsive Design Features
 
@@ -1208,13 +1218,57 @@ If you encounter issues:
 - 🔒 **Limit permissions**: Grant minimum required access
 - 🚫 **Validate inputs**: Sanitize all user inputs
 - 🔍 **Monitor access**: Review Google Cloud audit logs
+- 🔢 **PIN Security**: Use masked input to prevent shoulder surfing
 
 ### Security Features
+
+#### PIN Masking Implementation
+
+The application implements secure PIN input masking using the `msvcrt` module (Windows-specific):
+
+**How it works:**
+- PIN characters are captured character-by-character using `msvcrt.getch()`
+- Each digit displays as an asterisk (*) instead of the actual number
+- Backspace functionality allows secure corrections
+- PIN is never displayed in plain text during input
+
+**Code Implementation:**
+```python
+def get_pin(prompt="PIN: "):
+    print(prompt, end='', flush=True)
+    pin = ''
+    while True:
+        ch = msvcrt.getch()
+        if ch in {b'\r', b'\n'}:  # Enter key
+            print()
+            break
+        elif ch == b'\x08':  # Backspace
+            if len(pin) > 0:
+                pin = pin[:-1]
+                print('\b \b', end='', flush=True)
+        elif ch in {b'\x03', b'\x1b'}:  # Ctrl+C or Esc
+            raise KeyboardInterrupt
+        elif ch.isdigit():
+            pin += ch.decode()
+            print('*', end='', flush=True)
+    return pin
+```
+
+**Benefits:**
+- ✅ Prevents shoulder surfing attacks
+- ✅ Protects against screen recording
+- ✅ Maintains user privacy during authentication
+- ✅ Provides real-time visual feedback (asterisks)
+- ✅ Supports corrections with backspace
+
+#### Additional Security Measures
 
 - **Encrypted communication**: All data transmitted over HTTPS/WSS
 - **Process isolation**: Each session runs in separate Python process
 - **Credential management**: Secure handling of authentication tokens
 - **Input validation**: Protection against injection attacks
+- **Failed attempt tracking**: Monitors and limits incorrect PIN entries (max 3 attempts)
+- **Session timeout**: Automatic termination of inactive sessions
 
 [Back to Table of Contents](#table-of-contents)
 
