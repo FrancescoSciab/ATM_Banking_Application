@@ -63,6 +63,15 @@ A web-based ATM banking simulation application built with Python and Node.js, fe
     - [Lighthouse Testing](#lighthouse-testing)
       - [Test Environment](#test-environment)
       - [Lighthouse Metrics Explained](#lighthouse-metrics-explained)
+    - [Manual Testing](#manual-testing)
+      - [Device Testing](#device-testing)
+      - [Browsers Tested](#browsers-tested)
+      - [Functional Testing](#functional-testing)
+      - [User Story Testing](#user-story-testing)
+      - [Integration Testing Results](#integration-testing-results)
+    - [Automated Testing](#automated-testing)
+    - [Accessibility Testing](#accessibility-testing)
+    - [Known Issues](#known-issues)
       - [Test Results](#test-results)
       - [Analysis \& Observations](#analysis--observations)
       - [Consistency Across Tests](#consistency-across-tests)
@@ -505,7 +514,7 @@ Use any of these sample accounts to test the application:
 | 4532761841325802 | 4321 | Oleg       | Dvoinisiuk   | All operations     |
 | 5128381368581872 | 6543 | Francesco  | Sciabbarrasi | All operations     |
 | 6011188364697109 | 8765 | Brian      | McNamara     | All operations     |
-| 490693153147110  | 2040 | Anna       | Watson       | All operations     |
+| 490693153147110  | 2040 | Chris      | Obroin       | All operations     |
 
 ### Sample Transaction Flow
 
