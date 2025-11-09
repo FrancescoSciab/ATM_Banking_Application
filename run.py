@@ -1,7 +1,15 @@
 import sys
 import os
-import msvcrt
+import platform
 from cardHolder import API, show_welcome_message, transfer_money
+
+# Cross-platform input handling
+IS_WINDOWS = platform.system() == 'Windows'
+if IS_WINDOWS:
+    import msvcrt
+else:
+    import termios
+    import tty
 
 # Import the API class and test the connection
 api = None
@@ -75,7 +83,7 @@ def print_menu():
 
 def get_pin(prompt="PIN: ", max_length=6):
     """
-    Securely get PIN input with masked display.
+    Securely get PIN input with masked display (cross-platform).
     
     Args:
         prompt: The prompt to display
@@ -86,20 +94,51 @@ def get_pin(prompt="PIN: ", max_length=6):
     """
     print(prompt, end='', flush=True)
     pin = ''
-    while True:
-        ch = msvcrt.getch()
-        if ch in {b'\r', b'\n'}: 
-            print()
-            break
-        elif ch == b'\x08': 
-            if len(pin) > 0:
-                pin = pin[:-1]
-                print('\b \b', end='', flush=True)
-        elif ch in {b'\x03', b'\x1b'}: 
-            raise KeyboardInterrupt
-        elif ch.isdigit() and len(pin) < max_length:
-            pin += ch.decode()
-            print('*', end='', flush=True)
+    
+    if IS_WINDOWS:
+        # Windows implementation using msvcrt
+        while True:
+            ch = msvcrt.getch()
+            if ch in {b'\r', b'\n'}: 
+                print()
+                break
+            elif ch == b'\x08': 
+                if len(pin) > 0:
+                    pin = pin[:-1]
+                    print('\b \b', end='', flush=True)
+            elif ch in {b'\x03', b'\x1b'}: 
+                raise KeyboardInterrupt
+            elif ch.isdigit() and len(pin) < max_length:
+                pin += ch.decode()
+                print('*', end='', flush=True)
+    else:
+        # Linux/Unix implementation using termios
+        fd = sys.stdin.fileno()
+        old_settings = termios.tcgetattr(fd)
+        try:
+            tty.setraw(fd)
+            while True:
+                ch = sys.stdin.read(1)
+                
+                # Handle Enter key (newline or carriage return)
+                if ch in {'\n', '\r'}:
+                    print('\r\n', end='', flush=True)
+                    break
+                # Handle Backspace (127) or Delete (8)
+                elif ord(ch) in {127, 8}:
+                    if len(pin) > 0:
+                        pin = pin[:-1]
+                        print('\b \b', end='', flush=True)
+                # Handle Ctrl+C
+                elif ord(ch) == 3:
+                    raise KeyboardInterrupt
+                # Handle digits
+                elif ch.isdigit() and len(pin) < max_length:
+                    pin += ch
+                    print('*', end='', flush=True)
+        finally:
+            termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
+    
     return pin
 
 def authenticate(api):

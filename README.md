@@ -128,7 +128,7 @@ This application simulates a real ATM banking system with a web-based terminal i
 - **Communication**: WebSocket for real-time terminal interaction
 - **Deployment**: Render.com with automatic builds
 - **Responsive Framework**: Custom CSS media queries for all device sizes
-- **Security**: msvcrt module for Windows PIN masking, input validation, error handling
+- **Security**: Cross-platform PIN masking (msvcrt for Windows, termios for Linux/Unix), input validation, error handling
 - **Code Quality**: Comprehensive docstrings, type-safe error handling, input sanitization
 
 [Back to Table of Contents](#table-of-contents)
@@ -614,7 +614,7 @@ The application includes comprehensive error handling for:
 
 ### Security Features
 
-- **PIN Masking**: Real-time masking of PIN input with asterisks (*) using `msvcrt` module with max length enforcement (6 digits)
+- **PIN Masking**: Real-time masking of PIN input with asterisks (*) - cross-platform support (msvcrt for Windows, termios for Linux/Unix) with max length enforcement (6 digits)
 - **PIN Validation**: Minimum 4-digit requirement with numeric-only validation
 - **Session Isolation**: Each user gets a separate Python process
 - **PIN Verification**: Secure PIN validation with attempt limits (max 3 attempts)
@@ -1238,19 +1238,31 @@ If you encounter issues:
 
 #### PIN Masking Implementation
 
-The application implements secure PIN input masking using the `msvcrt` module (Windows-specific):
+The application implements secure PIN input masking with **cross-platform support**:
 
 **How it works:**
-- PIN characters are captured character-by-character using `msvcrt.getch()`
+- **Windows**: Uses `msvcrt.getch()` for character-by-character input
+- **Linux/Unix**: Uses `termios` and `tty` for raw terminal input
 - Each digit displays as an asterisk (*) instead of the actual number
 - Backspace functionality allows secure corrections
 - PIN is never displayed in plain text during input
+- Automatically detects operating system and uses appropriate method
 
 **Code Implementation:**
 ```python
+import platform
+
+# Cross-platform input handling
+IS_WINDOWS = platform.system() == 'Windows'
+if IS_WINDOWS:
+    import msvcrt
+else:
+    import termios
+    import tty
+
 def get_pin(prompt="PIN: ", max_length=6):
     """
-    Securely get PIN input with masked display.
+    Securely get PIN input with masked display (cross-platform).
     
     Args:
         prompt: The prompt to display
@@ -1261,24 +1273,52 @@ def get_pin(prompt="PIN: ", max_length=6):
     """
     print(prompt, end='', flush=True)
     pin = ''
-    while True:
-        ch = msvcrt.getch()
-        if ch in {b'\r', b'\n'}:  # Enter key
-            print()
-            break
-        elif ch == b'\x08':  # Backspace
-            if len(pin) > 0:
-                pin = pin[:-1]
-                print('\b \b', end='', flush=True)
-        elif ch in {b'\x03', b'\x1b'}:  # Ctrl+C or Esc
-            raise KeyboardInterrupt
-        elif ch.isdigit() and len(pin) < max_length:
-            pin += ch.decode()
-            print('*', end='', flush=True)
+    
+    if IS_WINDOWS:
+        # Windows implementation using msvcrt
+        while True:
+            ch = msvcrt.getch()
+            if ch in {b'\r', b'\n'}: 
+                print()
+                break
+            elif ch == b'\x08': 
+                if len(pin) > 0:
+                    pin = pin[:-1]
+                    print('\b \b', end='', flush=True)
+            elif ch in {b'\x03', b'\x1b'}: 
+                raise KeyboardInterrupt
+            elif ch.isdigit() and len(pin) < max_length:
+                pin += ch.decode()
+                print('*', end='', flush=True)
+    else:
+        # Linux/Unix implementation using termios
+        fd = sys.stdin.fileno()
+        old_settings = termios.tcgetattr(fd)
+        try:
+            tty.setraw(fd)
+            while True:
+                ch = sys.stdin.read(1)
+                
+                if ch in {'\n', '\r'}:  # Enter
+                    print('\r\n', end='', flush=True)
+                    break
+                elif ord(ch) in {127, 8}:  # Backspace
+                    if len(pin) > 0:
+                        pin = pin[:-1]
+                        print('\b \b', end='', flush=True)
+                elif ord(ch) == 3:  # Ctrl+C
+                    raise KeyboardInterrupt
+                elif ch.isdigit() and len(pin) < max_length:
+                    pin += ch
+                    print('*', end='', flush=True)
+        finally:
+            termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
+    
     return pin
 ```
 
 **Benefits:**
+- ✅ **Cross-platform compatibility** - Works on Windows, Linux, Unix, and macOS
 - ✅ Prevents shoulder surfing attacks
 - ✅ Protects against screen recording
 - ✅ Maintains user privacy during authentication
@@ -1286,6 +1326,7 @@ def get_pin(prompt="PIN: ", max_length=6):
 - ✅ Supports corrections with backspace
 - ✅ Enforces maximum PIN length (6 digits)
 - ✅ Comprehensive error handling with KeyboardInterrupt support
+- ✅ **Deployment-ready** - Works in Render.com Linux environment
 
 #### Additional Security Measures
 
@@ -1309,6 +1350,7 @@ def get_pin(prompt="PIN: ", max_length=6):
 The application has undergone significant code quality improvements:
 
 #### Run.py Improvements
+- ✅ **Cross-platform PIN masking** - Added support for both Windows (msvcrt) and Linux/Unix (termios) environments
 - ✅ **Removed redundant imports** - Eliminated duplicate API import and unused json module
 - ✅ **Enhanced error handling** - Replaced generic `Exception` with specific `ValueError` and `TypeError`
 - ✅ **Better input validation** - Added comprehensive amount parsing with detailed error messages
@@ -1317,6 +1359,7 @@ The application has undergone significant code quality improvements:
 - ✅ **Consistent formatting** - All currency displays use `€{amount:,.2f}` format with thousand separators
 - ✅ **Better documentation** - Added comprehensive docstrings to all functions
 - ✅ **Safer startup** - Added `if __name__ == "__main__"` guard
+- ✅ **Deployment compatibility** - Fixed ModuleNotFoundError for Render.com Linux environment
 
 #### CardHolder.py Improvements
 - ✅ **Removed debug statements** - Eliminated development `print()` statements from production code
