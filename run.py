@@ -132,7 +132,8 @@ def authenticate(api):
                             except:
                                 pass
                         if pin_attempts >= 3:
-                            print("Too many failed PIN attempts. Card locked.")
+                            print("Too many failed PIN attempts. Your card has been locked for security.")
+                            print("Please contact your bank administration to unlock your card.")
                             return None
                         continue
                     return ('api', card)
@@ -156,7 +157,8 @@ def authenticate(api):
                         if remaining_attempts > 0:
                             print(f"You have {remaining_attempts} attempt(s) remaining for your PIN to enter")
                         if pin_attempts >= 3:
-                            print("Too many failed PIN attempts. Card locked. Contact your bank.")
+                            print("Too many failed PIN attempts. Your card has been locked for security.")
+                            print("Please contact your bank administration to unlock your card.")
                             return None
                         continue
             except Exception as e:
