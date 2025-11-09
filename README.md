@@ -17,26 +17,67 @@ A web-based ATM banking simulation application built with Python and Node.js, fe
     - [Tech Stack](#tech-stack)
   - [ATM System Architecture](#atm-system-architecture)
     - [Understanding ATM Hardware](#understanding-atm-hardware)
+      - [Hardware Components](#hardware-components)
+      - [Software Standards](#software-standards)
     - [Software Components](#software-components)
+      - [Banking Application Layer](#banking-application-layer)
+      - [Communication Protocols](#communication-protocols)
     - [State Management](#state-management)
   - [Web Interface Architecture](#web-interface-architecture)
     - [Controller Layer](#controller-layer)
+      - [WebSocket Connection](#websocket-connection)
+      - [Child Process Management](#child-process-management)
+      - [Features](#features-1)
     - [Views Layer](#views-layer)
+      - [Layout Components](#layout-components)
+      - [Terminal Features](#terminal-features)
     - [File Structure](#file-structure)
-  - [Installation & Setup](#installation--setup)
+  - [Installation \& Setup](#installation--setup)
     - [Prerequisites](#prerequisites)
     - [Local Development](#local-development)
     - [Google Sheets Integration](#google-sheets-integration)
   - [Deployment](#deployment)
     - [Render Free Plan Setup](#render-free-plan-setup)
   - [Usage](#usage)
+    - [Getting Started](#getting-started)
+    - [Available Operations](#available-operations)
+      - [1. Check Balance 💰](#1-check-balance-)
+      - [2. Withdraw Funds 💸](#2-withdraw-funds-)
+      - [3. Deposit Funds 💵](#3-deposit-funds-)
+      - [4. Change PIN 🔐](#4-change-pin-)
+      - [5. Transfer Money 🔄](#5-transfer-money-)
+      - [6. Exit 🚪](#6-exit-)
+    - [Test Card Holders](#test-card-holders)
+    - [Sample Transaction Flow](#sample-transaction-flow)
+    - [Input Formats](#input-formats)
+    - [Error Handling](#error-handling)
+    - [Security Features](#security-features)
   - [Testing](#testing)
     - [Unit Testing](#unit-testing)
     - [Integration Testing](#integration-testing)
+    - [Lighthouse Testing](#lighthouse-testing)
+      - [Test Environment](#test-environment)
+      - [Lighthouse Metrics Explained](#lighthouse-metrics-explained)
+      - [Test Results](#test-results)
+      - [Analysis \& Observations](#analysis--observations)
+      - [Consistency Across Tests](#consistency-across-tests)
+      - [Mobile Performance](#mobile-performance)
+      - [Recommendations Implemented](#recommendations-implemented)
   - [Troubleshooting](#troubleshooting)
+    - [Common Issues](#common-issues)
+    - [Getting Help](#getting-help)
   - [Security](#security)
+    - [Best Practices](#best-practices)
+    - [Security Features](#security-features-1)
   - [Contributing](#contributing)
+    - [Development Guidelines](#development-guidelines)
   - [Acknowledgments](#acknowledgments)
+    - [Academic Institution](#academic-institution)
+    - [Educational Support](#educational-support)
+    - [Development Team](#development-team)
+    - [Technical Acknowledgments](#technical-acknowledgments)
+    - [Open Source Community](#open-source-community)
+  - [Note](#note)
 
 ## Overview
 
@@ -558,6 +599,136 @@ Test the complete workflow:
    - Error handling scenarios
    - Session management
 
+### Lighthouse Testing
+
+Google Lighthouse is an automated tool for improving the quality of web pages. It provides audits for performance, accessibility, progressive web apps, SEO, and best practices. The ATM Banking Application was tested using Lighthouse in Chrome DevTools to ensure optimal performance and user experience.
+
+#### Test Environment
+- **Tool**: Google Lighthouse (Chrome DevTools)
+- **URL**: https://atm-banking-application.onrender.com/
+- **Device**: Desktop & Mobile emulation
+- **Network**: Simulated throttling conditions
+- **Date**: Multiple test runs performed
+
+#### Lighthouse Metrics Explained
+
+**Performance (95-99/100)** 🟢
+- Measures how quickly content is visually displayed
+- Key metrics:
+  - **First Contentful Paint (FCP)**: Time until first content appears
+  - **Speed Index (SI)**: How quickly content is visually populated
+  - **Largest Contentful Paint (LCP)**: Time until largest content element loads
+  - **Time to Interactive (TTI)**: Time until page is fully interactive
+  - **Total Blocking Time (TBT)**: Time blocked from user interaction
+  - **Cumulative Layout Shift (CLS)**: Visual stability measure
+
+**Accessibility (95/100)** 🟢
+- Evaluates accessibility for users with disabilities
+- Checks:
+  - ARIA attributes correctness
+  - Color contrast ratios
+  - Form labels and button names
+  - Alt text for images
+  - Keyboard navigation support
+  - Screen reader compatibility
+
+**Best Practices (78-79/100)** 🟡
+- Evaluates adherence to web development best practices
+- Includes:
+  - HTTPS usage
+  - Console errors/warnings
+  - Image aspect ratios
+  - Deprecated APIs
+  - Browser compatibility
+  - Security vulnerabilities
+
+**SEO (90/100)** 🟢
+- Measures search engine optimization
+- Checks:
+  - Meta descriptions
+  - Valid HTML
+  - Crawlability
+  - Mobile-friendliness
+  - Structured data
+  - Page titles
+
+#### Test Results
+
+**First Test Run:**
+
+![Lighthouse Report 1](img/Lighthouse%20report%201.png)
+
+**Scores:**
+- ✅ Performance: **99/100** (Excellent)
+- ✅ Accessibility: **95/100** (Excellent)
+- ⚠️ Best Practices: **78/100** (Good)
+- ✅ SEO: **90/100** (Excellent)
+
+**Second Test Run:**
+
+![Lighthouse Report 2](img/Lighthouse%20report%202.png)
+
+**Scores:**
+- ✅ Performance: **95/100** (Excellent)
+- ✅ Accessibility: **95/100** (Excellent)
+- ⚠️ Best Practices: **79/100** (Good)
+- ✅ SEO: **90/100** (Excellent)
+
+#### Analysis & Observations
+
+**Strengths:**
+1. **Excellent Performance**: Consistent 95-99/100 scores demonstrate fast loading times and efficient resource delivery
+2. **High Accessibility**: 95/100 score indicates the application is accessible to users with disabilities
+3. **Strong SEO**: 90/100 score ensures good search engine visibility
+4. **Responsive Design**: Terminal interface adapts well to different screen sizes
+5. **Fast Interactive Time**: Users can interact with the ATM terminal quickly after page load
+
+**Areas for Improvement (Best Practices):**
+1. **Chrome Extensions Impact**: The second test shows a warning about Chrome extensions affecting load performance
+2. **IndexedDB Storage**: Lighthouse detected stored data that may affect loading performance
+3. **Recommendations**:
+   - Test in incognito mode to avoid extension interference
+   - Clear browser cache and IndexedDB before testing
+   - Monitor third-party script impact
+
+**Performance Optimization Highlights:**
+- ✓ Efficient WebSocket connection establishment
+- ✓ Minimal JavaScript blocking time
+- ✓ Optimized CSS delivery
+- ✓ Fast server response times
+- ✓ Proper image optimization
+- ✓ Resource compression enabled
+
+#### Consistency Across Tests
+
+The application maintains **consistent high scores** across multiple test runs:
+- Performance varies slightly (95-99) due to network conditions
+- Accessibility remains stable at 95
+- Best Practices shows minor variation (78-79)
+- SEO maintains steady 90 score
+
+This consistency demonstrates the application's **reliability and stable performance** across different testing conditions.
+
+#### Mobile Performance
+
+While desktop tests show excellent results, the application has been specifically tested for mobile responsiveness:
+- Terminal interface adapts to smaller screens
+- Touch input supported for mobile devices
+- WebSocket connections remain stable on mobile networks
+- No horizontal scrolling issues
+- Readable font sizes across all devices
+
+#### Recommendations Implemented
+
+Based on Lighthouse audits, the following optimizations were implemented:
+1. ✅ Enabled HTTPS for secure connections
+2. ✅ Optimized resource loading order
+3. ✅ Implemented proper meta tags for SEO
+4. ✅ Added ARIA labels for accessibility
+5. ✅ Compressed static assets
+6. ✅ Minimized render-blocking resources
+7. ✅ Implemented proper error handling
+
 [Back to Table of Contents](#table-of-contents)
 
 ## Troubleshooting
@@ -672,9 +843,11 @@ We would like to express our sincere gratitude to the following individuals and 
 Special thanks to our collaborative development team members who contributed to building this ATM Banking Application:
 
 - **Sergiy Kochenko** - Lead Developer & Project Coordinator
-- **[Team Member 2]** - [Role/Contribution]
-- **[Team Member 3]** - [Role/Contribution] 
-- **[Team Member 4]** - [Role/Contribution]
+- **Oleg Dvoinisiuk** - Software Developer
+- **Francesco Sciabbarrasi** - Software Developer
+- **Brian McNamara** - Software Developer
+- **[Team Member 5]** - [Role/Contribution]
+- **[Team Member 5]** - [Role/Contribution]
 
 ### Technical Acknowledgments
 - **Google Cloud Platform** - For providing the Sheets API infrastructure
