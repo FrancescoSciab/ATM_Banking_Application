@@ -99,15 +99,12 @@ def authenticate(api):
     """Prompt for card and PIN first, return a tuple (source, obj) or None.
     source: 'api' for ATMCard via API, 'repo' for ClientRecord via SimpleClientRepo
     """
-    attempts = 0
-    while attempts < 3:
+    while True:
         try:
             card_num = input("Insert Your Card: ").strip()
             if not card_num:
                 print("Please insert your card.")
-                attempts += 1
                 continue
-            pin = get_pin("PIN: ")
         except (EOFError, KeyboardInterrupt):
             print("\nOperation cancelled")
             return None
@@ -120,34 +117,49 @@ def authenticate(api):
                 cards = []
             if cards:
                 card = cards[0]
-                if not card.verify_pin(pin):
-                    print("Incorrect PIN.")
-                    try:
-                        print(f"Failed tries: {card.getFailedTries()}")
-                    except:
-                        pass
-                    attempts += 1
-                    continue
-                return ('api', card)
+                pin_attempts = 0
+                while pin_attempts < 3:
+                    pin = get_pin("PIN: ")
+                    if not card.verify_pin(pin):
+                        pin_attempts += 1
+                        remaining_attempts = 3 - pin_attempts
+                        print("Incorrect PIN.")
+                        if remaining_attempts > 0:
+                            print(f"You have {remaining_attempts} attempt(s) remaining for your PIN to enter")
+                            try:
+                                print(f"Failed tries: {card.getFailedTries()}")
+                            except:
+                                pass
+                        if pin_attempts >= 3:
+                            print("Too many failed PIN attempts. Card locked.")
+                            return None
+                        continue
+                    return ('api', card)
 
         # Fall back to SimpleClientRepo (single 'client' worksheet)
         if repo is not None:
             try:
-                if repo.verify(card_num, pin):
-                    rec = repo.get_record(card_num)
-                    return ('repo', rec)
-                else:
-                    print("Incorrect PIN.")
-                    attempts += 1
-                    continue
+                pin_attempts = 0
+                while pin_attempts < 3:
+                    pin = get_pin("PIN: ")
+                    if repo.verify(card_num, pin):
+                        rec = repo.get_record(card_num)
+                        return ('repo', rec)
+                    else:
+                        pin_attempts += 1
+                        remaining_attempts = 3 - pin_attempts
+                        print("Incorrect PIN.")
+                        if remaining_attempts > 0:
+                            print(f"You have {remaining_attempts} attempt(s) remaining for your PIN to enter")
+                        if pin_attempts >= 3:
+                            print("Too many failed PIN attempts. Card locked.")
+                            return None
+                        continue
             except Exception as e:
                 print(f"[WARN] Sheet lookup failed: {e}")
 
         print("Card not found.")
-        attempts += 1
-
-    print("Too many failed attempts.")
-    return None
+        return None
 
 def _parse_amount(s):
     s = str(s).replace('\xa0', '').replace(' ', '').replace(',', '.')
