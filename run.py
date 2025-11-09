@@ -81,14 +81,14 @@ def get_pin(prompt="PIN: "):
     pin = ''
     while True:
         ch = msvcrt.getch()
-        if ch in {b'\r', b'\n'}:  # Enter key
+        if ch in {b'\r', b'\n'}: 
             print()
             break
-        elif ch == b'\x08':  # Backspace
+        elif ch == b'\x08': 
             if len(pin) > 0:
                 pin = pin[:-1]
                 print('\b \b', end='', flush=True)
-        elif ch in {b'\x03', b'\x1b'}:  # Ctrl+C or Esc
+        elif ch in {b'\x03', b'\x1b'}: 
             raise KeyboardInterrupt
         elif ch.isdigit():
             pin += ch.decode()
@@ -109,7 +109,6 @@ def authenticate(api):
             print("\nOperation cancelled")
             return None
 
-        # Try API backend first (ATMCard)
         if api is not None:
             try:
                 cards = api.getATMCards(card_num)
@@ -136,7 +135,6 @@ def authenticate(api):
                         continue
                     return ('api', card)
 
-        # Fall back to SimpleClientRepo (single 'client' worksheet)
         if repo is not None:
             try:
                 pin_attempts = 0
@@ -152,7 +150,7 @@ def authenticate(api):
                         if remaining_attempts > 0:
                             print(f"You have {remaining_attempts} attempt(s) remaining for your PIN to enter")
                         if pin_attempts >= 3:
-                            print("Too many failed PIN attempts. Card locked.")
+                            print("Too many failed PIN attempts. Card locked. Contact your bank.")
                             return None
                         continue
             except Exception as e:
