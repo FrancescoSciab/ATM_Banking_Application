@@ -10,10 +10,18 @@ def formatFloatFromServer(numberToConvert):
         return numberToConvert
 
 def transfer_money(source_obj, repo):
+    """
+    Transfer money between accounts.
+    
+    Args:
+        source_obj: Source account object (ClientRecord or ATMCard)
+        repo: Repository instance for database operations
+    """
     print("\n" + "="*40)
     print("      MONEY TRANSFER")
     print("="*40)
     
+    # Get and validate amount
     try:
         amount = float(input("Amount to transfer: €").strip().replace(',', ''))
         if amount <= 0:
@@ -22,7 +30,7 @@ def transfer_money(source_obj, repo):
         if amount > source_obj.balance:
             print("Insufficient funds!")
             return
-    except:
+    except (ValueError, TypeError):
         print("Invalid amount.")
         return
 
@@ -56,11 +64,11 @@ def transfer_money(source_obj, repo):
         source_obj.balance -= amount
         dest_rec.balance += amount
         
-        print(f"\nSUCCESS! Transferred €{amount:,.2f}")
+        print(f"\n✓ SUCCESS! Transferred €{amount:,.2f}")
         print(f"To: {dest_rec.firstName} {dest_rec.lastName}")
         print(f"Your new balance: €{source_obj.balance:,.2f}")
     else:
-        print("Transfer failed. Try again.")
+        print("Transfer failed. Please try again.")
 
 def show_welcome_message(client):
     print("\n" + "═" * 50)
@@ -74,7 +82,14 @@ def show_welcome_message(client):
         
 def _parse_balance_str(val):
     """
-    Accepts values like '3 649,30', '557,22', '150.79' or numeric and returns float.
+    Parse balance string to float, handling various formats.
+    Accepts values like '3 649,30', '557,22', '150.79' or numeric.
+    
+    Args:
+        val: Balance value (string, int, or float)
+    
+    Returns:
+        Float value of the balance, or 0.0 if parsing fails
     """
     try:
         if isinstance(val, (int, float)):
@@ -82,7 +97,7 @@ def _parse_balance_str(val):
         s = str(val).replace('\xa0', '').replace(' ', '')
         s = s.replace(',', '.')
         return float(s)
-    except Exception:
+    except (ValueError, TypeError):
         return 0.0
 
 class ClientRecord:
@@ -135,26 +150,56 @@ class SimpleClientRepo:
         return str(rec.pin) == str(pin)
 
     def update_balance(self, card_num, new_balance):
-        ws = self._ws()
-        cell = ws.find(str(card_num).strip())
-        if not cell:
+        """
+        Update account balance in the database.
+        
+        Args:
+            card_num: Card number to identify the account
+            new_balance: New balance value
+        
+        Returns:
+            True if successful, False otherwise
+        """
+        try:
+            ws = self._ws()
+            cell = ws.find(str(card_num).strip())
+            if not cell:
+                return False
+            # Update column 5 (balance). Store as number.
+            ws.update_cell(cell.row, 5, float(new_balance))
+            return True
+        except Exception as e:
+            print(f"[ERROR] Failed to update balance: {e}")
             return False
-        # Update column 5 (balance). Store as number.
-        ws.update_cell(cell.row, 5, float(new_balance))
-        return True
 
     def update_pin(self, card_num, new_pin):
-        ws = self._ws()
-        cell = ws.find(str(card_num).strip())
-        if not cell:
+        """
+        Update PIN in the database.
+        
+        Args:
+            card_num: Card number to identify the account
+            new_pin: New PIN value
+        
+        Returns:
+            True if successful, False otherwise
+        """
+        try:
+            ws = self._ws()
+            cell = ws.find(str(card_num).strip())
+            if not cell:
+                return False
+            # Update column 2 (pin)
+            ws.update_cell(cell.row, 2, str(new_pin))
+            return True
+        except Exception as e:
+            print(f"[ERROR] Failed to update PIN: {e}")
             return False
-        # Update column 2 (pin)
-        ws.update_cell(cell.row, 2, str(new_pin))
-        return True
 
 class API:
-    # Initialise the API class
-    # The connection can be verified by checking that the instance is not None    
+    """
+    API class for interacting with Google Sheets database.
+    Manages account holders, accounts, and ATM cards.
+    """
     def __init__(self):
         self.SCOPE=[
             "https://www.googleapis.com/auth/spreadsheets",
@@ -167,7 +212,8 @@ class API:
             self.GSPREAD_CLIENT = gspread.authorize(self.SCOPED_CREDS)
             self.SHEET = self.GSPREAD_CLIENT.open("client_database")
         except Exception as e:
-            self=None
+            print(f"[ERROR] Failed to initialize API: {e}")
+            self = None
 
 
     # Get a list of all Account Holders, or just 1
@@ -302,20 +348,27 @@ class Account:
     # @amountToAdd - a float, can be negative to reduce the balance, or positive to increase it
     # Returns true if database successfully updated, false if it did not
     def increaseBalance(self, amountToAdd):
-        'Call api to update server'
+        """
+        Update the balance on the account.
+        
+        Args:
+            amountToAdd: Amount to add (can be negative to reduce balance)
+        
+        Returns:
+            True if successful, False otherwise
+        """
         a = API()
         try:
             account_cell = a.SHEET.worksheet("account").findall(self.accountID)
-            ' There should be only one, but this search will ensure it is the card number column that was found'
+            # Find the correct cell in column 1
             for idColCheck in account_cell:
-                if int(idColCheck.col)==1:
+                if int(idColCheck.col) == 1:
                     curValue = formatFloatFromServer(a.SHEET.worksheet("account").row_values(idColCheck.row)[2])
-                    print(curValue)                    
-                    curValue = float(curValue)+amountToAdd
-                    print(curValue)
-                    a.SHEET.worksheet("account").update_cell(idColCheck.row,3,curValue)
+                    curValue = float(curValue) + amountToAdd
+                    a.SHEET.worksheet("account").update_cell(idColCheck.row, 3, curValue)
                     return True
-        except:
+        except Exception as e:
+            print(f"[ERROR] Failed to update balance: {e}")
             return False
         return False
 
@@ -338,17 +391,32 @@ class ATMCard(Account):
     # @newPin - an int
     # Returns true if database successfully updated, false if it did not
     def setPin(self, newPin):
-        'Call api to update server'
+        """
+        Update the PIN in the database.
+        
+        Args:
+            newPin: New PIN value (string or int)
+        
+        Returns:
+            True if successful, False otherwise
+        """
+        if not str(newPin).isdigit():
+            print("[ERROR] PIN must be numeric")
+            return False
+        if len(str(newPin)) < 4:
+            print("[ERROR] PIN must be at least 4 digits")
+            return False
+            
         a = API()
         try:
             card_cell = a.SHEET.worksheet("atmCards").findall(self.cardNumber)
-            ' There should be only one, but this search will ensure it is the card number column that was found'
             for idColCheck in card_cell:
-                if int(idColCheck.col)==2:
-                    a.SHEET.worksheet("atmCards").update_cell(idColCheck.row,3,newPin)
+                if int(idColCheck.col) == 2:
+                    a.SHEET.worksheet("atmCards").update_cell(idColCheck.row, 3, newPin)
                     self.pin = newPin
                     return True
-        except:
+        except Exception as e:
+            print(f"[ERROR] Failed to update PIN: {e}")
             return False
         return False
     
@@ -357,35 +425,45 @@ class ATMCard(Account):
     
     # Update the number of failed tries in the database by 1
     # Returns true if database successfully updated, false if it did not
-    def increaseFailedTries(self):        
-        'Call api to update server'
+    def increaseFailedTries(self):
+        """
+        Increment failed PIN attempts by 1.
+        
+        Returns:
+            True if successful, False otherwise
+        """
         a = API()
         try:
             card_cell = a.SHEET.worksheet("atmCards").findall(self.cardNumber)
-            ' There should be only one, but this search will ensure it is the card number column that was found'
             for idColCheck in card_cell:
-                if int(idColCheck.col)==2:
-                    a.SHEET.worksheet("atmCards").update_cell(idColCheck.row,4,int(self.failedTries)+1)
-                    self.failedTries = int(self.failedTries)+ 1
+                if int(idColCheck.col) == 2:
+                    a.SHEET.worksheet("atmCards").update_cell(idColCheck.row, 4, int(self.failedTries) + 1)
+                    self.failedTries = int(self.failedTries) + 1
                     return True
-        except:
+        except Exception as e:
+            print(f"[ERROR] Failed to update failed tries: {e}")
             return False
         return False
     
     # Update the number of failedTries in the database, resets the number to 0
     # Returns true if database successfully updated, false if it did not
     def resetFailedTries(self):
-        'Call api to update server'
+        """
+        Reset failed PIN attempts to 0.
+        
+        Returns:
+            True if successful, False otherwise
+        """
         a = API()
         try:
             card_cell = a.SHEET.worksheet("atmCards").findall(self.cardNumber)
-            ' There should be only one, but this search will ensure it is the card number column that was found'
             for idColCheck in card_cell:
-                if int(idColCheck.col)==2:
-                    a.SHEET.worksheet("atmCards").update_cell(idColCheck.row,4,0)
+                if int(idColCheck.col) == 2:
+                    a.SHEET.worksheet("atmCards").update_cell(idColCheck.row, 4, 0)
                     self.failedTries = 0
                     return True
-        except:
+        except Exception as e:
+            print(f"[ERROR] Failed to reset failed tries: {e}")
             return False
         return False
 
@@ -422,12 +500,23 @@ class ATMCard(Account):
     # @amount - positive float amount to withdraw
     # Returns True on success, False otherwise
     def withdraw(self, amount):
+        """
+        Withdraw funds from the account.
+        
+        Args:
+            amount: Positive float amount to withdraw
+        
+        Returns:
+            True on success, False otherwise
+        """
         try:
             cur_bal = float(formatFloatFromServer(self.accountBalance))
             amt = float(amount)
             if amt <= 0:
+                print("[ERROR] Withdrawal amount must be positive")
                 return False
             if amt > cur_bal:
+                print("[ERROR] Insufficient funds")
                 return False
             # decrease balance by amount
             success = self.increaseBalance(-amt)
@@ -436,16 +525,27 @@ class ATMCard(Account):
                 self.accountBalance = str(cur_bal - amt)
                 return True
             return False
-        except Exception:
+        except (ValueError, TypeError) as e:
+            print(f"[ERROR] Invalid withdrawal amount: {e}")
             return False
 
     # Deposit funds into the account
     # @amount - positive float amount to deposit
     # Returns True on success, False otherwise
     def deposit(self, amount):
+        """
+        Deposit funds into the account.
+        
+        Args:
+            amount: Positive float amount to deposit
+        
+        Returns:
+            True on success, False otherwise
+        """
         try:
             amt = float(amount)
             if amt <= 0:
+                print("[ERROR] Deposit amount must be positive")
                 return False
             cur_bal = float(formatFloatFromServer(self.accountBalance))
             success = self.increaseBalance(amt)
@@ -453,7 +553,8 @@ class ATMCard(Account):
                 self.accountBalance = str(cur_bal + amt)
                 return True
             return False
-        except Exception:
+        except (ValueError, TypeError) as e:
+            print(f"[ERROR] Invalid deposit amount: {e}")
             return False
 
     # Change PIN for this card. Caller should have verified old_pin already.
@@ -464,59 +565,3 @@ class ATMCard(Account):
             return self.setPin(newPin)
         except Exception:
             return False
-
-
-
-
-
-
-# # This class needs to be removed
-# class cardHolder:
-#     def __init__(self, cardNum, pin, firstname, lastname, balance):
-#         self.cardNum = cardNum
-#         self.pin = pin
-#         self.firstname = firstname
-#         self.lastname = lastname
-#         self.balance = balance
-
-#     def __str__(self):
-#         return f"cardHolder({self.cardNum}, {self.pin}, {self.firstname}, {self.lastname}, {self.balance})"
-
-#     # Getter methods
-#     def get_cardNum(self):
-#         return self.cardNum
-
-#     def get_pin(self):
-#         return self.pin
-
-#     def get_firstName(self):
-#         return self.firstname
-
-#     def get_lastName(self):
-#         return self.lastname
-
-#     def get_balance(self):
-#         return self.balance
-
-#     # Setter mathods
-#     def set_cardNum(self, newVal):
-#         self.cardNum = newVal
-
-#     def set_pin(self, newVal):
-#         self.pin = newVal
-
-#     def set_firstName(self, newVal):
-#         self.firstname = newVal
-
-#     def set_lastName(self, newVal):
-#         self.lastname = newVal
-
-#     def set_balance(self, newVal):
-#         self.balance = newVal
-
-#     def print_out(self):
-#         print("Card #: ", self.cardNum)
-#         print("Pin: ", self.pin)
-#         print("First Name: ", self.firstname)
-#         print("Last Name: ", self.lastname)
-#         print("Balance: ", self.balance)

@@ -1,19 +1,16 @@
 import sys
 import os
-import json
 import msvcrt
 from cardHolder import API, show_welcome_message, transfer_money
-
 
 # Import the API class and test the connection
 api = None
 try:
-    from cardHolder import API
     api = API()
-    if api == None:
-        print(f"[WARN] Google APIs unavailable")
+    if api is None:
+        print("[WARN] Google APIs unavailable")
 except Exception as e:
-    print(f"[WARN] Failed to import API: {e}")
+    print(f"[WARN] Failed to initialize API: {e}")
 
 # Import necessary classes
 # If any are unsuccessful assign api to "None" so the program wont continue
@@ -76,7 +73,17 @@ def print_menu():
     print("5. Transfer Money")
     print("6. Exit")
 
-def get_pin(prompt="PIN: "):
+def get_pin(prompt="PIN: ", max_length=6):
+    """
+    Securely get PIN input with masked display.
+    
+    Args:
+        prompt: The prompt to display
+        max_length: Maximum PIN length (default: 6)
+    
+    Returns:
+        The entered PIN as a string
+    """
     print(prompt, end='', flush=True)
     pin = ''
     while True:
@@ -90,7 +97,7 @@ def get_pin(prompt="PIN: "):
                 print('\b \b', end='', flush=True)
         elif ch in {b'\x03', b'\x1b'}: 
             raise KeyboardInterrupt
-        elif ch.isdigit():
+        elif ch.isdigit() and len(pin) < max_length:
             pin += ch.decode()
             print('*', end='', flush=True)
     return pin
@@ -168,8 +175,26 @@ def authenticate(api):
         return None
 
 def _parse_amount(s):
-    s = str(s).replace('\xa0', '').replace(' ', '').replace(',', '.')
-    return float(s)
+    """
+    Parse amount string to float, handling various formats.
+    
+    Args:
+        s: Amount string (can contain spaces, commas, etc.)
+    
+    Returns:
+        Float value of the amount
+    
+    Raises:
+        ValueError: If the string cannot be converted to a valid amount
+    """
+    try:
+        s = str(s).replace('\xa0', '').replace(' ', '').replace(',', '.')
+        amount = float(s)
+        if amount < 0:
+            raise ValueError("Amount cannot be negative")
+        return amount
+    except (ValueError, TypeError) as e:
+        raise ValueError(f"Invalid amount format: {s}") from e
 
 def main():
     print_banner()
@@ -207,63 +232,82 @@ def main():
             # Existing API + ATMCard flow
             if choice == "1":
                 bal = obj.check_balance()
-                print("Could not retrieve balance." if bal is None else f"Current balance: {bal:.2f}")
+                print("Could not retrieve balance." if bal is None else f"Current balance: €{bal:,.2f}")
             elif choice == "2":
                 try:
-                    amt = _parse_amount(input("Amount to withdraw: ").strip())
-                except Exception:
-                    print("Invalid amount"); continue
-                if amt <= 0: print("Amount must be positive"); continue
-                print(f"Withdrawn {amt:.2f}. New balance: {obj.check_balance():.2f}" if obj.withdraw(amt)
-                      else "Withdrawal failed (insufficient funds or server error).")
+                    amt = _parse_amount(input("Amount to withdraw: €").strip())
+                except ValueError as e:
+                    print(f"Invalid amount. {e}"); continue
+                if amt <= 0: 
+                    print("Amount must be positive"); continue
+                if obj.withdraw(amt):
+                    print(f"✓ Withdrawn €{amt:,.2f}. New balance: €{obj.check_balance():,.2f}")
+                else:
+                    print("Withdrawal failed (insufficient funds or server error).")
             elif choice == "3":
                 try:
-                    amt = _parse_amount(input("Amount to deposit: ").strip())
-                except Exception:
-                    print("Invalid amount"); continue
-                if amt <= 0: print("Amount must be positive"); continue
-                print(f"Deposited {amt:.2f}. New balance: {obj.check_balance():.2f}" if obj.deposit(amt)
-                      else "Deposit failed (server error).")
+                    amt = _parse_amount(input("Amount to deposit: €").strip())
+                except ValueError as e:
+                    print(f"Invalid amount. {e}"); continue
+                if amt <= 0: 
+                    print("Amount must be positive"); continue
+                if obj.deposit(amt):
+                    print(f"✓ Deposited €{amt:,.2f}. New balance: €{obj.check_balance():,.2f}")
+                else:
+                    print("Deposit failed (server error).")
             elif choice == "4":
                 try:
-                    new_pin = input("Enter new PIN: ").strip()
-                    confirm = input("Confirm new PIN: ").strip()
-                except Exception:
+                    new_pin = get_pin("Enter new PIN: ")
+                    confirm = get_pin("Confirm new PIN: ")
+                except (EOFError, KeyboardInterrupt):
                     print("Input cancelled"); continue
-                if new_pin != confirm: print("PIN mismatch. Try again."); continue
-                if not new_pin.isdigit(): print("PIN must be numeric"); continue
-                print("PIN changed successfully." if obj.change_pin(new_pin) else "Failed to change PIN.")
+                
+                if not new_pin or not confirm:
+                    print("PIN cannot be empty"); continue
+                if new_pin != confirm: 
+                    print("PIN mismatch. Try again."); continue
+                if not new_pin.isdigit(): 
+                    print("PIN must be numeric"); continue
+                if len(new_pin) < 4:
+                    print("PIN must be at least 4 digits"); continue
+                    
+                if obj.change_pin(new_pin):
+                    print("✓ PIN changed successfully.")
+                else:
+                    print("Failed to change PIN.")
             elif choice == "5":
                 transfer_money(obj, repo)
             else:
                 print("Invalid option. Please choose 1-6.")
         else:
             if choice == "1":
-                print(f"Current balance: {obj.balance:.2f}")
+                print(f"Current balance: €{obj.balance:,.2f}")
             elif choice == "2":
                 try:
-                    amt = _parse_amount(input("Amount to withdraw: ").strip())
-                except Exception:
-                    print("Invalid amount"); continue
-                if amt <= 0: print("Amount must be positive"); continue
+                    amt = _parse_amount(input("Amount to withdraw: €").strip())
+                except ValueError as e:
+                    print(f"Invalid amount. {e}"); continue
+                if amt <= 0: 
+                    print("Amount must be positive"); continue
                 if amt > obj.balance:
                     print("Withdrawal failed (insufficient funds)."); continue
                 new_balance = obj.balance - amt
                 if repo.update_balance(obj.cardNum, new_balance):
                     obj.balance = new_balance
-                    print(f"Withdrawn {amt:.2f}. New balance: {obj.balance:.2f}")
+                    print(f"✓ Withdrawn €{amt:,.2f}. New balance: €{obj.balance:,.2f}")
                 else:
                     print("Withdrawal failed (server error).")
             elif choice == "3":
                 try:
-                    amt = _parse_amount(input("Amount to deposit: ").strip())
-                except Exception:
-                    print("Invalid amount"); continue
-                if amt <= 0: print("Amount must be positive"); continue
+                    amt = _parse_amount(input("Amount to deposit: €").strip())
+                except ValueError as e:
+                    print(f"Invalid amount. {e}"); continue
+                if amt <= 0: 
+                    print("Amount must be positive"); continue
                 new_balance = obj.balance + amt
                 if repo.update_balance(obj.cardNum, new_balance):
                     obj.balance = new_balance
-                    print(f"Deposited {amt:.2f}. New balance: {obj.balance:.2f}")
+                    print(f"✓ Deposited €{amt:,.2f}. New balance: €{obj.balance:,.2f}")
                 else:
                     print("Deposit failed (server error).")
             elif choice == "4":
@@ -292,10 +336,13 @@ def main():
                             if not new_pin.isdigit():
                                 print("PIN must be numeric")
                                 continue
+                            if len(new_pin) < 4:
+                                print("PIN must be at least 4 digits")
+                                continue
                                 
                             if repo.update_pin(obj.cardNum, new_pin):
                                 obj.pin = new_pin
-                                print("PIN changed successfully.")
+                                print("✓ PIN changed successfully.")
                                 pin_changed = True
                                 break
                             else:
@@ -315,5 +362,8 @@ def main():
                 print("Invalid option. Please choose 1-6.")
     return
 
-if api != None or repo is not None:
-    main()
+if __name__ == "__main__":
+    if api is not None or repo is not None:
+        main()
+    else:
+        print("[ERROR] No backend available. Cannot start ATM application.")

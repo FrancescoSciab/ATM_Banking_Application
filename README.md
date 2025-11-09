@@ -85,6 +85,14 @@ A web-based ATM banking simulation application built with Python and Node.js, fe
     - [Security Features](#security-features-1)
       - [PIN Masking Implementation](#pin-masking-implementation)
       - [Additional Security Measures](#additional-security-measures)
+  - [Code Quality \& Recent Improvements](#code-quality--recent-improvements)
+    - [Recent Enhancements (November 2025)](#recent-enhancements-november-2025)
+      - [Run.py Improvements](#runpy-improvements)
+      - [CardHolder.py Improvements](#cardholderpy-improvements)
+    - [Code Quality Standards](#code-quality-standards)
+      - [Python Code Standards](#python-code-standards)
+      - [Error Handling Strategy](#error-handling-strategy)
+      - [Security Improvements](#security-improvements)
   - [Contributing](#contributing)
     - [Development Guidelines](#development-guidelines)
   - [Acknowledgments](#acknowledgments)
@@ -120,7 +128,8 @@ This application simulates a real ATM banking system with a web-based terminal i
 - **Communication**: WebSocket for real-time terminal interaction
 - **Deployment**: Render.com with automatic builds
 - **Responsive Framework**: Custom CSS media queries for all device sizes
-- **Security**: msvcrt module for Windows PIN masking
+- **Security**: msvcrt module for Windows PIN masking, input validation, error handling
+- **Code Quality**: Comprehensive docstrings, type-safe error handling, input sanitization
 
 [Back to Table of Contents](#table-of-contents)
 
@@ -605,13 +614,16 @@ The application includes comprehensive error handling for:
 
 ### Security Features
 
-- **PIN Masking**: Real-time masking of PIN input with asterisks (*) using `msvcrt` module
+- **PIN Masking**: Real-time masking of PIN input with asterisks (*) using `msvcrt` module with max length enforcement (6 digits)
+- **PIN Validation**: Minimum 4-digit requirement with numeric-only validation
 - **Session Isolation**: Each user gets a separate Python process
 - **PIN Verification**: Secure PIN validation with attempt limits (max 3 attempts)
-- **Input Validation**: All inputs are sanitized and validated
+- **Input Validation**: All inputs are sanitized and validated with type-safe error handling
+- **Amount Validation**: Positive number checks with detailed error messages
 - **Real-time Updates**: Immediate database synchronization
-- **Transfer Confirmation**: Double confirmation for money transfers
+- **Transfer Confirmation**: Double confirmation for money transfers with recipient validation
 - **Backspace Support**: Secure PIN editing during input
+- **Error Protection**: Specific exception handling to prevent information leakage
 
 ### Responsive Design Features
 
@@ -1216,9 +1228,11 @@ If you encounter issues:
 - 🔑 **Use environment variables**: Store secrets securely
 - 🛡️ **Rotate keys regularly**: Update service account keys periodically
 - 🔒 **Limit permissions**: Grant minimum required access
-- 🚫 **Validate inputs**: Sanitize all user inputs
+- 🚫 **Validate inputs**: Sanitize all user inputs with specific exception handling
 - 🔍 **Monitor access**: Review Google Cloud audit logs
-- 🔢 **PIN Security**: Use masked input to prevent shoulder surfing
+- 🔢 **PIN Security**: Use masked input with length limits to prevent shoulder surfing
+- ✅ **Input Validation**: Type-safe validation for all monetary transactions
+- 🎯 **Error Handling**: User-friendly messages without exposing technical details
 
 ### Security Features
 
@@ -1234,7 +1248,17 @@ The application implements secure PIN input masking using the `msvcrt` module (W
 
 **Code Implementation:**
 ```python
-def get_pin(prompt="PIN: "):
+def get_pin(prompt="PIN: ", max_length=6):
+    """
+    Securely get PIN input with masked display.
+    
+    Args:
+        prompt: The prompt to display
+        max_length: Maximum PIN length (default: 6)
+    
+    Returns:
+        The entered PIN as a string
+    """
     print(prompt, end='', flush=True)
     pin = ''
     while True:
@@ -1248,7 +1272,7 @@ def get_pin(prompt="PIN: "):
                 print('\b \b', end='', flush=True)
         elif ch in {b'\x03', b'\x1b'}:  # Ctrl+C or Esc
             raise KeyboardInterrupt
-        elif ch.isdigit():
+        elif ch.isdigit() and len(pin) < max_length:
             pin += ch.decode()
             print('*', end='', flush=True)
     return pin
@@ -1260,17 +1284,83 @@ def get_pin(prompt="PIN: "):
 - ✅ Maintains user privacy during authentication
 - ✅ Provides real-time visual feedback (asterisks)
 - ✅ Supports corrections with backspace
+- ✅ Enforces maximum PIN length (6 digits)
+- ✅ Comprehensive error handling with KeyboardInterrupt support
 
 #### Additional Security Measures
 
 - **Encrypted communication**: All data transmitted over HTTPS/WSS
 - **Process isolation**: Each session runs in separate Python process
 - **Credential management**: Secure handling of authentication tokens
-- **Input validation**: Protection against injection attacks
+- **Input validation**: Protection against injection attacks with type-safe error handling
 - **Failed attempt tracking**: Monitors and limits incorrect PIN entries (max 3 attempts)
 - **Session timeout**: Automatic termination of inactive sessions
+- **Amount validation**: Prevents negative values and invalid formats
+- **PIN requirements**: Minimum 4 digits, maximum 6 digits, numeric only
+- **Error messages**: User-friendly messages without technical details
+- **Database error handling**: Graceful failures with appropriate feedback
 
 [Back to Table of Contents](#table-of-contents)
+
+## Code Quality & Recent Improvements
+
+### Recent Enhancements (November 2025)
+
+The application has undergone significant code quality improvements:
+
+#### Run.py Improvements
+- ✅ **Removed redundant imports** - Eliminated duplicate API import and unused json module
+- ✅ **Enhanced error handling** - Replaced generic `Exception` with specific `ValueError` and `TypeError`
+- ✅ **Better input validation** - Added comprehensive amount parsing with detailed error messages
+- ✅ **PIN security enhancement** - Added max length limit (6 digits) and minimum requirement (4 digits)
+- ✅ **Improved UX** - Added checkmark (✓) symbols for successful operations
+- ✅ **Consistent formatting** - All currency displays use `€{amount:,.2f}` format with thousand separators
+- ✅ **Better documentation** - Added comprehensive docstrings to all functions
+- ✅ **Safer startup** - Added `if __name__ == "__main__"` guard
+
+#### CardHolder.py Improvements
+- ✅ **Removed debug statements** - Eliminated development `print()` statements from production code
+- ✅ **Enhanced error handling** - Replaced generic `except:` with specific exception types
+- ✅ **Added validation** - PIN validation in `setPin()` with numeric check and length requirements
+- ✅ **Better error messages** - Specific error messages for different failure scenarios
+- ✅ **Improved documentation** - Added comprehensive docstrings to all methods and classes
+- ✅ **Amount validation** - Enhanced withdraw/deposit with better error messages
+- ✅ **Database error handling** - Better exception handling in all database operations
+- ✅ **Success indicators** - Added ✓ symbol to transfer success messages
+
+### Code Quality Standards
+
+#### Python Code Standards
+- **PEP 8 Compliance**: All Python code follows PEP 8 style guidelines
+- **Type Safety**: Specific exception handling (ValueError, TypeError) instead of bare except
+- **Documentation**: Comprehensive docstrings with Args, Returns, and Raises sections
+- **Input Validation**: All user inputs validated before processing
+- **Error Messages**: User-friendly messages that don't expose technical details
+
+#### Error Handling Strategy
+```python
+# Before: Generic exception handling
+try:
+    amount = float(input_value)
+except:
+    return False
+
+# After: Specific, documented exception handling
+try:
+    amount = float(input_value)
+    if amount < 0:
+        raise ValueError("Amount cannot be negative")
+    return amount
+except (ValueError, TypeError) as e:
+    raise ValueError(f"Invalid amount format: {input_value}") from e
+```
+
+#### Security Improvements
+- PIN length enforcement (4-6 digits)
+- Numeric-only PIN validation
+- Amount validation (positive numbers only)
+- Protection against negative value exploits
+- Specific exception types to prevent information leakage
 
 ## Contributing
 
@@ -1280,15 +1370,21 @@ We welcome contributions! Please follow these guidelines:
 2. **Create a feature branch**: `git checkout -b feature/amazing-feature`
 3. **Commit changes**: `git commit -m 'Add amazing feature'`
 4. **Push to branch**: `git push origin feature/amazing-feature`
-5. \*\*Open a Pull Request`
+5. **Open a Pull Request**
 
 ### Development Guidelines
 
 - Follow PEP 8 for Python code
 - Use ESLint for JavaScript code
+- Write comprehensive docstrings for all functions/classes
+- Use specific exception types (ValueError, TypeError, etc.)
+- Add type hints where applicable
 - Write tests for new features
 - Update documentation for changes
 - Test both locally and on Render
+- Ensure all user-facing messages are clear and non-technical
+- Validate all inputs before processing
+- Use consistent formatting (e.g., `€{amount:,.2f}` for currency)
 
 [Back to Table of Contents](#table-of-contents)
 
