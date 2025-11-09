@@ -1,7 +1,9 @@
 import sys
 import os
 import json
+import msvcrt
 from cardHolder import API, show_welcome_message, transfer_money
+
 
 # Import the API class and test the connection
 api = None
@@ -74,6 +76,25 @@ def print_menu():
     print("5. Transfer Money")
     print("6. Exit")
 
+def get_pin(prompt="PIN: "):
+    print(prompt, end='', flush=True)
+    pin = ''
+    while True:
+        ch = msvcrt.getch()
+        if ch in {b'\r', b'\n'}:  # Enter key
+            print()
+            break
+        elif ch == b'\x08':  # Backspace
+            if len(pin) > 0:
+                pin = pin[:-1]
+                print('\b \b', end='', flush=True)
+        elif ch in {b'\x03', b'\x1b'}:  # Ctrl+C or Esc
+            raise KeyboardInterrupt
+        elif ch.isdigit():
+            pin += ch.decode()
+            print('*', end='', flush=True)
+    return pin
+
 def authenticate(api):
     """Prompt for card and PIN first, return a tuple (source, obj) or None.
     source: 'api' for ATMCard via API, 'repo' for ClientRecord via SimpleClientRepo
@@ -86,7 +107,7 @@ def authenticate(api):
                 print("Please insert your card.")
                 attempts += 1
                 continue
-            pin = input("PIN: ").strip()
+            pin = get_pin("PIN: ")
         except (EOFError, KeyboardInterrupt):
             print("\nOperation cancelled")
             return None
