@@ -113,7 +113,7 @@ def authenticate(api):
             try:
                 cards = api.getATMCards(card_num)
             except Exception as e:
-                print(f"Error checking card with API: {e}")
+                print("Unable to process your card. Please try again or contact support.")
                 cards = []
 
             if cards: 
