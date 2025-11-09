@@ -141,7 +141,7 @@ def authenticate(api):
             try:
                 rec = repo.get_record(card_num)
                 if not rec:
-                    print("Card not found.")
+                    print("Card not found. Please try again.")
                     continue
 
                 pin_attempts = 0
@@ -236,7 +236,6 @@ def main():
             else:
                 print("Invalid option. Please choose 1-6.")
         else:
-            # Single-sheet repo flow (ClientRecord)
             if choice == "1":
                 print(f"Current balance: {obj.balance:.2f}")
             elif choice == "2":
@@ -266,18 +265,48 @@ def main():
                 else:
                     print("Deposit failed (server error).")
             elif choice == "4":
-                try:
-                    new_pin = input("Enter new PIN: ").strip()
-                    confirm = input("Confirm new PIN: ").strip()
-                except Exception:
-                    print("Input cancelled"); continue
-                if new_pin != confirm: print("PIN mismatch. Try again."); continue
-                if not new_pin.isdigit(): print("PIN must be numeric"); continue
-                if repo.update_pin(obj.cardNum, new_pin):
-                    obj.pin = new_pin
-                    print("PIN changed successfully.")
-                else:
-                    print("Failed to change PIN.")
+                pin_attempts = 0
+                pin_changed = False
+                while pin_attempts < 3:
+                    try:
+                        current = get_pin("Enter current PIN: ")
+                        if str(obj.pin) != str(current):
+                            pin_attempts += 1
+                            remaining_attempts = 3 - pin_attempts
+                            print("Incorrect current PIN.")
+                            if remaining_attempts > 0:
+                                print(f"You have {remaining_attempts} attempt(s) remaining.")
+                            if pin_attempts >= 3:
+                                print("Too many incorrect attempts. Returning to main menu.")
+                            continue
+                        
+                        try:
+                            new_pin = get_pin("Enter new PIN: ")
+                            confirm = get_pin("Confirm new PIN: ")
+                            
+                            if new_pin != confirm:
+                                print("PIN mismatch. Try again.")
+                                continue
+                            if not new_pin.isdigit():
+                                print("PIN must be numeric")
+                                continue
+                                
+                            if repo.update_pin(obj.cardNum, new_pin):
+                                obj.pin = new_pin
+                                print("PIN changed successfully.")
+                                pin_changed = True
+                                break
+                            else:
+                                print("Failed to change PIN.")
+                                break
+                        except Exception:
+                            print("Input cancelled")
+                            break
+                    except Exception:
+                        print("Input cancelled")
+                        break
+                if not pin_changed:
+                    continue
             elif choice == "5":
                 transfer_money(obj, repo)
             else:
