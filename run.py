@@ -112,9 +112,11 @@ def authenticate(api):
         if api is not None:
             try:
                 cards = api.getATMCards(card_num)
-            except Exception:
+            except Exception as e:
+                print(f"Error checking card with API: {e}")
                 cards = []
-            if cards:
+
+            if cards: 
                 card = cards[0]
                 pin_attempts = 0
                 while pin_attempts < 3:
@@ -137,11 +139,15 @@ def authenticate(api):
 
         if repo is not None:
             try:
+                rec = repo.get_record(card_num)
+                if not rec:
+                    print("Card not found.")
+                    continue
+
                 pin_attempts = 0
                 while pin_attempts < 3:
                     pin = get_pin("PIN: ")
-                    if repo.verify(card_num, pin):
-                        rec = repo.get_record(card_num)
+                    if str(rec.pin) == str(pin):
                         return ('repo', rec)
                     else:
                         pin_attempts += 1
