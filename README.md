@@ -86,12 +86,14 @@ This application simulates a real ATM banking system with a web-based terminal i
 ### Features
 - 🏧 **ATM Simulation**: Complete ATM workflow simulation
 - 🔐 **Authentication**: Secure card number and PIN verification
-- 💰 **Banking Operations**: Deposit, withdrawal, balance inquiry
+- 💰 **Banking Operations**: Deposit, withdrawal, balance inquiry, and money transfers
 - 📊 **Google Sheets Integration**: Real-time data storage and retrieval
 - 🌐 **Web Terminal**: Browser-based terminal interface using xterm.js
 - 🔄 **Real-time Updates**: WebSocket-powered live communication
-- 📱 **Responsive Design**: Works on desktop, tablet, and mobile devices
+- 📱 **Responsive Design**: Fully optimized for mobile phones, tablets, and desktops
+- 🎯 **Dynamic UI**: Terminal appears on-demand when starting a session
 - 🛡️ **Security**: Encrypted credentials and secure data handling
+- ♿ **Accessibility**: High contrast, keyboard navigation, and screen reader compatible
 
 ### Tech Stack
 - **Backend**: Python 3.x, Node.js with Total.js framework
@@ -99,6 +101,7 @@ This application simulates a real ATM banking system with a web-based terminal i
 - **Database**: Google Sheets API
 - **Communication**: WebSocket for real-time terminal interaction
 - **Deployment**: Render.com with automatic builds
+- **Responsive Framework**: Custom CSS media queries for all device sizes
 
 [Back to Table of Contents](#table-of-contents)
 
@@ -196,12 +199,24 @@ python = spawn('python', ['-u', 'run.py'], {
 #### Layout Components
 - **Base Template**: Common HTML structure and styling
 - **xterm.js Integration**: Terminal emulator from CDN
-- **Responsive Design**: Mobile-friendly interface
+- **Responsive Design**: Comprehensive media queries for all devices
+  - Mobile phones (320px - 768px)
+  - Tablets (768px - 1024px)
+  - Desktops (1024px - 1440px)
+  - Large displays (1440px - 2560px)
+  - 4K screens (2560px+)
+- **Dynamic Sizing**: Terminal automatically adjusts to viewport
+- **Orientation Support**: Optimized for portrait and landscape modes
 
 #### Terminal Features
+- **On-Demand Display**: Terminal hidden until "Run Program" is clicked
 - **Local Echo**: Immediate keystroke feedback
 - **Line Editing**: Backspace support and input buffering
 - **Enter Handling**: Sends complete lines to Python application
+- **Auto-Resize**: Terminal dimensions adjust on window resize
+- **Touch Support**: Mobile-optimized touch interactions
+- **Dynamic Font Scaling**: Font size adjusts based on screen size (9px - 18px)
+- **Scrollback Buffer**: 1000 lines of history
 
 ### File Structure
 ```
@@ -345,7 +360,9 @@ npm start
 
 1. **Access the Application**:
    - Navigate to your deployed URL or http://localhost:3000
-   - Click "Run Program" button to start the ATM terminal
+   - You'll see a clean landing page with the ATM background image
+   - Click the **"Run Program"** button to launch the terminal interface
+   - The terminal will appear and automatically connect to the Python backend
 
 2. **Authentication Process**:
    ```
@@ -526,6 +543,55 @@ The application includes comprehensive error handling for:
 - **Input Validation**: All inputs are sanitized and validated
 - **Real-time Updates**: Immediate database synchronization
 - **Transfer Confirmation**: Double confirmation for money transfers
+
+### Responsive Design Features
+
+The application is fully responsive and optimized for all device types:
+
+#### Device Optimization
+
+**Mobile Phones (320px - 768px)**
+- Terminal columns: 40-60
+- Font size: 9-12px
+- Height: 50-60vh
+- Touch-optimized interactions
+- Portrait and landscape support
+
+**Tablets (768px - 1024px)**
+- Terminal columns: 70
+- Font size: 13px
+- Height: 450px
+- Optimized for both orientations
+
+**Desktop (1024px - 1440px)**
+- Terminal columns: 80
+- Font size: 14px
+- Height: 500px
+- Full keyboard support
+
+**Large Displays (1440px+)**
+- Terminal columns: 100
+- Font size: 15px
+- Height: 600px
+- Enhanced visual experience
+
+**4K Screens (2560px+)**
+- Terminal columns: 120
+- Font size: 18px
+- Height: 800px
+- Maximum detail and clarity
+
+#### Responsive Features
+
+✅ **Dynamic Terminal Sizing**: Automatically adjusts columns and rows based on viewport  
+✅ **Auto Font Scaling**: Font size adapts from 9px to 18px for optimal readability  
+✅ **Orientation Detection**: Optimized layouts for portrait and landscape modes  
+✅ **Window Resize Handling**: Terminal resizes smoothly when window size changes  
+✅ **Touch Support**: Enhanced touch interactions for mobile devices  
+✅ **On-Demand Display**: Terminal appears only when needed, clean initial view  
+✅ **Button Scaling**: Responsive button sizes with hover and active states  
+✅ **No Horizontal Scroll**: Content always fits within viewport  
+✅ **Accessible on All Devices**: Tested on phones, tablets, and desktops
 
 > **Note**: This is a demonstration application. All test accounts are for educational purposes only. In production, additional security measures including encryption, audit logging, and regulatory compliance would be required.
 
