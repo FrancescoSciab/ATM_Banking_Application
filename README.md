@@ -846,7 +846,7 @@ Special thanks to our collaborative development team members who contributed to 
 - **Oleg Dvoinisiuk** - Software Developer
 - **Francesco Sciabbarrasi** - Software Developer
 - **Brian McNamara** - Software Developer
-- **[Team Member 5]** - [Role/Contribution]
+- **Chris OBroin** - Software Developer
 - **[Team Member 5]** - [Role/Contribution]
 
 ### Technical Acknowledgments
