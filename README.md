@@ -162,7 +162,7 @@ Each operational state (001-999) defines:
 
 ## Web Interface Architecture
 
-![ATM Machine Web Interface](img\ATM-Machine-Web-Interface.png)
+![ATM Machine Web Interface](img/ATM-Machine-Web-Interface.png)
 
 ### Controller Layer
 
