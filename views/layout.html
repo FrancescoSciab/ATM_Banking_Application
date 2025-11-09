@@ -18,12 +18,17 @@
     <title>ATM</title>
     <style>
         /* Fill the viewport and remove default margins */
-        html, body { height: 100%; margin: 0; }
+        html, body { 
+            height: 100%; 
+            margin: 0;
+            overflow: hidden;
+        }
 
         body {
-            font-family: Arial;
+            font-family: Arial, sans-serif;
             background-color: aqua;
         }
+
         #main-container {
             display: flex;
             flex-direction: column;
@@ -37,7 +42,10 @@
             background-repeat: no-repeat;    /* no tiling */
             width: 100%;
             min-height: 100vh;
+            padding: 10px;
+            box-sizing: border-box;
         }
+
         /**
         * Default styles for xterm.js
         */
@@ -48,6 +56,7 @@
             user-select: none;
             -ms-user-select: none;
             -webkit-user-select: none;
+            font-size: 14px;
         }
 
         .xterm.focus,
@@ -108,7 +117,8 @@
             top: 0;
             bottom: 0;
             background-color: rgb(0, 0, 0);
-            width: 730px;
+            width: 100%;
+            max-width: 730px;
         }
 
         .xterm .xterm-screen {
@@ -179,6 +189,21 @@
             text-decoration: underline;
         }
 
+        #terminal {
+            width: 100%;
+            max-width: 730px;
+            height: 500px;
+            background-color: #000;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            display: none; /* Hidden by default */
+        }
+
+        #terminal.active {
+            display: block; /* Show when active */
+        }
+
         button {
             width: 200px;
             height: 40px;
@@ -188,6 +213,161 @@
             text-transform: uppercase;
             margin: 10px;
             border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: background-color 0.3s, transform 0.1s;
+        }
+
+        button:hover:not(:disabled) {
+            background-color: #c93a0e;
+            transform: scale(1.05);
+        }
+
+        button:active:not(:disabled) {
+            transform: scale(0.98);
+        }
+
+        button:disabled {
+            background-color: #999;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        /* Tablet styles (portrait and landscape) */
+        @media screen and (max-width: 1024px) {
+            #terminal {
+                max-width: 90vw;
+                height: 450px;
+            }
+
+            .xterm {
+                font-size: 13px;
+            }
+
+            button {
+                width: 180px;
+                height: 38px;
+                font-size: 15px;
+            }
+        }
+
+        /* Mobile landscape */
+        @media screen and (max-width: 768px) and (orientation: landscape) {
+            #main-container {
+                padding: 5px;
+            }
+
+            #terminal {
+                max-width: 95vw;
+                height: 70vh;
+            }
+
+            .xterm {
+                font-size: 11px;
+            }
+
+            button {
+                width: 150px;
+                height: 36px;
+                font-size: 14px;
+                margin: 5px;
+            }
+        }
+
+        /* Mobile portrait */
+        @media screen and (max-width: 768px) and (orientation: portrait) {
+            #main-container {
+                padding: 5px;
+            }
+
+            #terminal {
+                max-width: 95vw;
+                height: 60vh;
+            }
+
+            .xterm {
+                font-size: 12px;
+            }
+
+            button {
+                width: 160px;
+                height: 40px;
+                font-size: 14px;
+            }
+        }
+
+        /* Extra small mobile devices */
+        @media screen and (max-width: 480px) {
+            #terminal {
+                max-width: 98vw;
+                height: 55vh;
+            }
+
+            .xterm {
+                font-size: 10px;
+            }
+
+            button {
+                width: 140px;
+                height: 36px;
+                font-size: 13px;
+                margin: 8px;
+            }
+        }
+
+        /* Very small devices (iPhone 4, etc.) */
+        @media screen and (max-width: 380px) {
+            #terminal {
+                max-width: 98vw;
+                height: 50vh;
+            }
+
+            .xterm {
+                font-size: 9px;
+            }
+
+            button {
+                width: 120px;
+                height: 34px;
+                font-size: 12px;
+            }
+        }
+
+        /* Large desktop screens */
+        @media screen and (min-width: 1440px) {
+            #terminal {
+                max-width: 900px;
+                height: 600px;
+            }
+
+            .xterm {
+                font-size: 15px;
+            }
+
+            button {
+                width: 220px;
+                height: 45px;
+                font-size: 17px;
+            }
+        }
+
+        /* Extra large screens (4K) */
+        @media screen and (min-width: 2560px) {
+            #terminal {
+                max-width: 1200px;
+                height: 800px;
+            }
+
+            .xterm {
+                font-size: 18px;
+            }
+
+            button {
+                width: 250px;
+                height: 50px;
+                font-size: 18px;
+            }
         }
     </style>
 </head>

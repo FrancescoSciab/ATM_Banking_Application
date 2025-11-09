@@ -3,11 +3,66 @@
 
 <script>
     let started = false;
+
+    // Function to calculate optimal terminal dimensions
+    function getTerminalDimensions() {
+        const width = window.innerWidth;
+        const height = window.innerHeight;
+        
+        let cols = 80;
+        let rows = 24;
+        
+        // Adjust columns based on screen width
+        if (width < 380) {
+            cols = 40;
+            rows = 20;
+        } else if (width < 480) {
+            cols = 50;
+            rows = 22;
+        } else if (width < 768) {
+            cols = 60;
+            rows = 24;
+        } else if (width < 1024) {
+            cols = 70;
+            rows = 26;
+        } else if (width >= 1440) {
+            cols = 100;
+            rows = 30;
+        } else if (width >= 2560) {
+            cols = 120;
+            rows = 40;
+        }
+        
+        // Adjust for landscape on mobile
+        if (width < 768 && width > height) {
+            rows = Math.floor(rows * 0.8);
+        }
+        
+        return { cols, rows };
+    }
+
     function startProgram() {
         if (started) return;
         started = true;
 
-        var term = new Terminal({ cols: 80, rows: 24, convertEol: true });
+        // Show the terminal
+        const terminalDiv = document.getElementById('terminal');
+        terminalDiv.classList.add('active');
+
+        const dimensions = getTerminalDimensions();
+        var term = new Terminal({ 
+            cols: dimensions.cols, 
+            rows: dimensions.rows, 
+            convertEol: true,
+            scrollback: 1000,
+            fontSize: getFontSize(),
+            fontFamily: 'Courier New, monospace',
+            theme: {
+                background: '#000000',
+                foreground: '#ffffff'
+            }
+        });
+
         term.open(document.getElementById('terminal'));
         term.focus();
         term.writeln('Running startup command: python run.py');
@@ -39,6 +94,8 @@
             term.write('\r\n[Session closed]\r\n');
             document.getElementById('runBtn').disabled = false;
             started = false;
+            // Optionally hide terminal on close
+            // document.getElementById('terminal').classList.remove('active');
         };
 
         // Simple local-echo line editor: buffer input, echo locally, send on Enter
@@ -94,12 +151,46 @@
             }
         });
 
+        // Handle window resize
+        let resizeTimeout;
+        window.addEventListener('resize', function() {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(function() {
+                const newDimensions = getTerminalDimensions();
+                try {
+                    term.resize(newDimensions.cols, newDimensions.rows);
+                    term.setOption('fontSize', getFontSize());
+                } catch (e) {
+                    console.log('Resize error:', e);
+                }
+            }, 250);
+        });
+
         // Ensure focus
         const termEl = document.getElementById('terminal');
         termEl.addEventListener('click', () => term.focus());
+        
+        // Mobile touch support
+        termEl.addEventListener('touchstart', function(e) {
+            term.focus();
+            e.preventDefault();
+        });
+
         setTimeout(function () {
             var ta = document.getElementsByClassName("xterm-helper-textarea")[0];
             if (ta) ta.focus();
         }, 50);
+    }
+
+    // Get appropriate font size based on screen width
+    function getFontSize() {
+        const width = window.innerWidth;
+        if (width < 380) return 9;
+        if (width < 480) return 10;
+        if (width < 768) return 11;
+        if (width < 1024) return 13;
+        if (width >= 2560) return 18;
+        if (width >= 1440) return 15;
+        return 14;
     }
 </script>
