@@ -54,22 +54,49 @@ def print_banner():
     RESET = "\033[0m"
     if not sys.stdout.isatty() or os.environ.get("TERM") in (None, "dumb"):
         CYAN = RESET = ""
-    banner = """
-    ╔════════════════════════════════════════════════════════════════╗
-    ║                                                                ║
-    ║                    █████╗ ████████╗███╗   ███╗                 ║
-    ║                   ██╔══██╗╚══██╔══╝████╗ ████║                 ║
-    ║                   ███████║   ██║   ██╔████╔██║                 ║
-    ║                   ██╔══██║   ██║   ██║╚██╔╝██║                 ║
-    ║                   ██║  ██║   ██║   ██║ ╚═╝ ██║                 ║
-    ║                   ╚═╝  ╚═╝   ╚═╝   ╚═╝     ╚═╝                 ║
-    ║                                                                ║
-    ║                         Welcome to the ATM                     ║
-    ║                                                                ║
-    ╚════════════════════════════════════════════════════════════════╝
-    """
-    print(CYAN + banner + RESET)
-    print(f"               Secure • Fast • 24/7 Access | Card-Only Banking{RESET}")
+    
+    banner_lines = [
+        "╔════════════════════════════════════════════════════════════════╗",
+        "║                                                                ║",
+        "║                    █████╗ ████████╗███╗   ███╗                 ║",
+        "║                   ██╔══██╗╚══██╔══╝████╗ ████║                 ║",
+        "║                   ███████║   ██║   ██╔████╔██║                 ║",
+        "║                   ██╔══██║   ██║   ██║╚██╔╝██║                 ║",
+        "║                   ██║  ██║   ██║   ██║ ╚═╝ ██║                 ║",
+        "║                   ╚═╝  ╚═╝   ╚═╝   ╚═╝     ╚═╝                 ║",
+        "║                                                                ║",
+        "║                         Welcome to the ATM                     ║",
+        "║                                                                ║",
+        "╚════════════════════════════════════════════════════════════════╝"
+    ]
+    
+    # Get terminal width, default to 80 if unavailable
+    try:
+        terminal_width = os.get_terminal_size().columns
+    except (AttributeError, OSError):
+        terminal_width = 80
+    
+    # Banner width is 68 characters
+    banner_width = len(banner_lines[0])
+    
+    # Calculate left padding to center the banner (add extra spaces to move right)
+    if terminal_width > banner_width:
+        padding = " " * (((terminal_width - banner_width) // 2) + 10)
+    else:
+        padding = ""
+    
+    # Print centered banner
+    for line in banner_lines:
+        print(CYAN + padding + line + RESET)
+    
+    # Center the tagline as well
+    tagline = "Secure • Fast • 24/7 Access | Card-Only Banking"
+    if terminal_width > len(tagline):
+        tagline_padding = " " * ((terminal_width - len(tagline)) // 2)
+    else:
+        tagline_padding = ""
+    
+    print(tagline_padding + tagline)
     print()
 
 def print_menu():
