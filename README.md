@@ -2,6 +2,14 @@
 
 A web-based ATM banking simulation application built with Python and Node.js, featuring real-time terminal interaction through WebSocket connections.
 
+## 🚀 Latest Updates
+
+**November 10, 2025 - PIN Masking Fix**
+- ✅ **Fixed**: PIN masking now works correctly on Render.com deployment
+- ✅ **Enhancement**: Added client-side PIN masking for web environments
+- ✅ **Security**: PIN input now displays as asterisks (*) in all environments
+- ✅ **Compatibility**: Maintains backward compatibility with local development
+
 ## Live Demo
 
 - **Production Site**: https://atm-banking-application.onrender.com/
@@ -833,7 +841,7 @@ The available functionality and user experience is reflected in the table below.
 | WebSocket connection establishes      |     ✓      |         ✓          |  Pass  | Real-time communication with backend               |
 | **Authentication**                    |
 | User can insert card number           |     ✓      |         ✓          |  Pass  | Accepts 16-digit card numbers                      |
-| User can enter PIN                    |     ✓      |         ✓          |  Pass  | PIN input is masked/displayed based on settings    |
+| User can enter PIN                    |     ✓      |         ✓          |  Pass  | PIN input is now properly masked as asterisks (*) |
 | System validates card number          |     ✓      |         ✓          |  Pass  | "Card not found" for invalid cards                 |
 | System validates PIN                  |     ✓      |         ✓          |  Pass  | "Incorrect PIN" for wrong PIN                      |
 | System tracks failed attempts         |     ✓      |         ✓          |  Pass  | Locks after 3 failed attempts                      |
@@ -1028,6 +1036,13 @@ The available functionality and user experience is reflected in the table below.
    - Issue: On some mobile browsers, keyboard may not auto-focus
    - Workaround: Tap inside terminal area
    - Status: Browser-specific behavior
+
+### Recently Fixed Issues
+
+1. **PIN Masking on Render.com (Fixed November 10, 2025):**
+   - ✅ **Issue**: PIN input displayed in plain text on deployed version
+   - ✅ **Solution**: Implemented client-side JavaScript PIN masking for WebSocket environments
+   - ✅ **Status**: PIN now displays as asterisks (*) in all environments
 
 **Performance (95-99/100)** 🟢
 
@@ -1241,15 +1256,21 @@ If you encounter issues:
 
 #### PIN Masking Implementation
 
-The application implements secure PIN input masking with **cross-platform support**:
+The application implements secure PIN input masking with **cross-platform support** and **web compatibility**:
+
+**Recent Fix (November 10, 2025):**
+- ✅ **Render.com compatibility** - Fixed PIN masking that was not working on the deployed version
+- ✅ **Client-side masking** - Added JavaScript-based PIN masking for WebSocket environments
+- ✅ **Automatic detection** - Detects PIN prompts and enables masking mode dynamically
 
 **How it works:**
 - **Windows**: Uses `msvcrt.getch()` for character-by-character input
 - **Linux/Unix**: Uses `termios` and `tty` for raw terminal input
-- **WebSocket/Pseudo-terminals**: Falls back to standard input when terminal masking is unavailable
-- Each digit displays as an asterisk (*) instead of the actual number (when masking is available)
+- **WebSocket/Pseudo-terminals**: Uses client-side JavaScript masking when terminal masking is unavailable
+- **Web Browsers**: Detects PIN prompts and masks numeric input as asterisks (*)
+- Each digit displays as an asterisk (*) instead of the actual number
 - Backspace functionality allows secure corrections
-- PIN is never displayed in plain text during input (when masking is available)
+- PIN is never displayed in plain text during input
 - Automatically detects operating system and terminal capabilities
 - Graceful degradation for non-TTY environments (WebSocket, pipes, redirects)
 
@@ -1378,7 +1399,15 @@ def get_pin(prompt="PIN: ", max_length=6):
 
 ### Recent Enhancements (November 2025)
 
-The application has undergone significant code quality improvements:
+The application has undergone significant code quality improvements and bug fixes:
+
+#### PIN Masking Bug Fix (November 10, 2025)
+- ✅ **Fixed PIN masking on Render.com** - Resolved issue where PIN input was displayed in plain text on the deployed version
+- ✅ **Client-side PIN masking** - Implemented JavaScript-based PIN masking for WebSocket environments
+- ✅ **Cross-platform compatibility** - PIN masking now works in both local terminals and web-based pseudo-terminals
+- ✅ **Real-time detection** - Automatically detects PIN prompts and enables masking mode
+- ✅ **Security enhancement** - PIN digits now display as asterisks (*) in all deployment environments
+- ✅ **Backward compatibility** - Maintains server-side masking for local development environments
 
 #### Run.py Improvements
 - ✅ **Cross-platform PIN masking** - Added support for both Windows (msvcrt) and Linux/Unix (termios) environments
