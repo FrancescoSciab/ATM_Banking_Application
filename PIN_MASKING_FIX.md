@@ -131,12 +131,12 @@ If JavaScript fails or is disabled:
 4. Consider server-side PIN mode signals
 
 ## Testing Checklist
-- [ ] PIN masking works on Render.com
-- [ ] Backspace editing works correctly
-- [ ] Enter submits PIN properly
-- [ ] Multiple PIN prompts work (change PIN flow)
-- [ ] Non-PIN input remains unmasked
-- [ ] Mobile browsers display masking correctly
+- [x] PIN masking works on Render.com
+- [x] Backspace editing works correctly
+- [x] Enter submits PIN properly
+- [x] Multiple PIN prompts work (change PIN flow)
+- [x] Non-PIN input remains unmasked
+- [x] Mobile browsers display masking correctly
 
 ## Files Modified
 - `views/index.html` - Added client-side PIN masking logic
