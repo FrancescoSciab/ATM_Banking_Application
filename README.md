@@ -2,16 +2,6 @@
 
 A web-based ATM banking simulation application built with Python and Node.js, featuring real-time terminal interaction through WebSocket connections.
 
-## 🚀 Latest Updates
-
-**November 10, 2025 - PIN Masking Fix**
-- ✅ **Fixed**: PIN masking now works correctly on Render.com deployment
-- ✅ **Enhancement**: Added client-side PIN masking for web environments
-- ✅ **Security**: PIN input now displays as asterisks (*) in all environments
-- ✅ **Compatibility**: Maintains backward compatibility with local development
-
-📋 **[View Complete PIN Masking Fix Documentation](PIN_MASKING_FIX.md)**
-
 ## Live Demo
 
 - **Production Site**: https://atm-banking-application.onrender.com/
@@ -95,6 +85,7 @@ A web-based ATM banking simulation application built with Python and Node.js, fe
     - [Security Features](#security-features-1)
       - [PIN Masking Implementation](#pin-masking-implementation)
       - [Additional Security Measures](#additional-security-measures)
+  - [Bug Fixes](#bug-fixes)
   - [Code Quality \& Recent Improvements](#code-quality--recent-improvements)
     - [Recent Enhancements (November 2025)](#recent-enhancements-november-2025)
       - [Run.py Improvements](#runpy-improvements)
@@ -1398,6 +1389,18 @@ def get_pin(prompt="PIN: ", max_length=6):
 - **PIN requirements**: Minimum 4 digits, maximum 6 digits, numeric only
 - **Error messages**: User-friendly messages without technical details
 - **Database error handling**: Graceful failures with appropriate feedback
+
+[Back to Table of Contents](#table-of-contents)
+
+## 🐛 Bug Fixes
+
+**PIN Masking Fix**
+- ✅ **Fixed**: PIN masking now works correctly on Render.com deployment
+- ✅ **Enhancement**: Added client-side PIN masking for web environments
+- ✅ **Security**: PIN input now displays as asterisks (*) in all environments
+- ✅ **Compatibility**: Maintains backward compatibility with local development
+
+📋 **[View Complete PIN Masking Fix Documentation](PIN_MASKING_FIX.md)**
 
 [Back to Table of Contents](#table-of-contents)
 
