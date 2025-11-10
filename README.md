@@ -430,10 +430,13 @@ npm start
    ╚════════════════════════════════════════════════════════════════╝
 
    Insert Your Card: [Enter your 16-digit card number]
-   PIN: **** [PIN is masked with asterisks for security]
+   PIN: **** [PIN is masked with asterisks for security when supported]
    ```
 
-   **Security Note**: PIN input is masked using asterisks (*) to protect your privacy. Each digit you type appears as an asterisk on the screen.
+   **Security Note**: PIN input masking adapts to your environment:
+   - **Local terminals**: PIN appears as asterisks (*) for maximum security
+   - **Web terminal (Render.com)**: Standard input mode - PIN displays as typed
+   - The application automatically detects which mode to use based on terminal capabilities
 
 3. **ATM Main Menu**:
    After successful authentication, you'll see:
@@ -1243,10 +1246,12 @@ The application implements secure PIN input masking with **cross-platform suppor
 **How it works:**
 - **Windows**: Uses `msvcrt.getch()` for character-by-character input
 - **Linux/Unix**: Uses `termios` and `tty` for raw terminal input
-- Each digit displays as an asterisk (*) instead of the actual number
+- **WebSocket/Pseudo-terminals**: Falls back to standard input when terminal masking is unavailable
+- Each digit displays as an asterisk (*) instead of the actual number (when masking is available)
 - Backspace functionality allows secure corrections
-- PIN is never displayed in plain text during input
-- Automatically detects operating system and uses appropriate method
+- PIN is never displayed in plain text during input (when masking is available)
+- Automatically detects operating system and terminal capabilities
+- Graceful degradation for non-TTY environments (WebSocket, pipes, redirects)
 
 **Code Implementation:**
 ```python
@@ -1263,6 +1268,7 @@ else:
 def get_pin(prompt="PIN: ", max_length=6):
     """
     Securely get PIN input with masked display (cross-platform).
+    Falls back to standard input if terminal masking is unavailable.
     
     Args:
         prompt: The prompt to display
@@ -1273,6 +1279,29 @@ def get_pin(prompt="PIN: ", max_length=6):
     """
     print(prompt, end='', flush=True)
     pin = ''
+    
+    # Check if we can use terminal masking
+    can_mask = False
+    if IS_WINDOWS:
+        can_mask = True
+    else:
+        # Check if stdin is a TTY that supports termios
+        try:
+            if sys.stdin.isatty():
+                fd = sys.stdin.fileno()
+                termios.tcgetattr(fd)
+                can_mask = True
+        except (AttributeError, OSError, termios.error):
+            can_mask = False
+    
+    if not can_mask:
+        # Fallback to standard input for WebSocket/pseudo-terminals
+        try:
+            pin = input().strip()[:max_length]
+            return pin
+        except (EOFError, KeyboardInterrupt):
+            print()
+            raise KeyboardInterrupt
     
     if IS_WINDOWS:
         # Windows implementation using msvcrt
@@ -1319,14 +1348,16 @@ def get_pin(prompt="PIN: ", max_length=6):
 
 **Benefits:**
 - ✅ **Cross-platform compatibility** - Works on Windows, Linux, Unix, and macOS
-- ✅ Prevents shoulder surfing attacks
-- ✅ Protects against screen recording
+- ✅ **WebSocket compatibility** - Gracefully handles pseudo-terminal environments
+- ✅ **Automatic fallback** - Uses standard input when terminal masking unavailable
+- ✅ Prevents shoulder surfing attacks (when masking is available)
+- ✅ Protects against screen recording (when masking is available)
 - ✅ Maintains user privacy during authentication
-- ✅ Provides real-time visual feedback (asterisks)
+- ✅ Provides real-time visual feedback (asterisks when available)
 - ✅ Supports corrections with backspace
 - ✅ Enforces maximum PIN length (6 digits)
 - ✅ Comprehensive error handling with KeyboardInterrupt support
-- ✅ **Deployment-ready** - Works in Render.com Linux environment
+- ✅ **Deployment-ready** - Works in Render.com Linux environment and WebSocket connections
 
 #### Additional Security Measures
 
@@ -1351,6 +1382,8 @@ The application has undergone significant code quality improvements:
 
 #### Run.py Improvements
 - ✅ **Cross-platform PIN masking** - Added support for both Windows (msvcrt) and Linux/Unix (termios) environments
+- ✅ **WebSocket compatibility** - Added fallback to standard input for pseudo-terminal environments
+- ✅ **Terminal capability detection** - Automatically detects if masking is available before attempting
 - ✅ **Removed redundant imports** - Eliminated duplicate API import and unused json module
 - ✅ **Enhanced error handling** - Replaced generic `Exception` with specific `ValueError` and `TypeError`
 - ✅ **Better input validation** - Added comprehensive amount parsing with detailed error messages
@@ -1359,7 +1392,7 @@ The application has undergone significant code quality improvements:
 - ✅ **Consistent formatting** - All currency displays use `€{amount:,.2f}` format with thousand separators
 - ✅ **Better documentation** - Added comprehensive docstrings to all functions
 - ✅ **Safer startup** - Added `if __name__ == "__main__"` guard
-- ✅ **Deployment compatibility** - Fixed ModuleNotFoundError for Render.com Linux environment
+- ✅ **Deployment compatibility** - Fixed "Inappropriate ioctl for device" error in WebSocket environment
 
 #### CardHolder.py Improvements
 - ✅ **Removed debug statements** - Eliminated development `print()` statements from production code

@@ -84,6 +84,7 @@ def print_menu():
 def get_pin(prompt="PIN: ", max_length=6):
     """
     Securely get PIN input with masked display (cross-platform).
+    Falls back to standard input if terminal masking is unavailable.
     
     Args:
         prompt: The prompt to display
@@ -94,6 +95,29 @@ def get_pin(prompt="PIN: ", max_length=6):
     """
     print(prompt, end='', flush=True)
     pin = ''
+    
+    # Check if we can use terminal masking
+    can_mask = False
+    if IS_WINDOWS:
+        can_mask = True
+    else:
+        # Check if stdin is a TTY that supports termios
+        try:
+            if sys.stdin.isatty():
+                fd = sys.stdin.fileno()
+                termios.tcgetattr(fd)
+                can_mask = True
+        except (AttributeError, OSError, termios.error):
+            can_mask = False
+    
+    if not can_mask:
+        # Fallback to standard input (no masking) for WebSocket/pseudo-terminals
+        try:
+            pin = input().strip()[:max_length]
+            return pin
+        except (EOFError, KeyboardInterrupt):
+            print()
+            raise KeyboardInterrupt
     
     if IS_WINDOWS:
         # Windows implementation using msvcrt
