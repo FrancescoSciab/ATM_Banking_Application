@@ -10,6 +10,8 @@ A web-based ATM banking simulation application built with Python and Node.js, fe
 - ✅ **Security**: PIN input now displays as asterisks (*) in all environments
 - ✅ **Compatibility**: Maintains backward compatibility with local development
 
+📋 **[View Complete PIN Masking Fix Documentation](PIN_MASKING_FIX.md)**
+
 ## Live Demo
 
 - **Production Site**: https://atm-banking-application.onrender.com/
@@ -101,6 +103,7 @@ A web-based ATM banking simulation application built with Python and Node.js, fe
       - [Python Code Standards](#python-code-standards)
       - [Error Handling Strategy](#error-handling-strategy)
       - [Security Improvements](#security-improvements)
+  - [PIN Masking Fix Documentation](PIN_MASKING_FIX.md) 📋
   - [Contributing](#contributing)
     - [Development Guidelines](#development-guidelines)
   - [Acknowledgments](#acknowledgments)
@@ -1043,6 +1046,7 @@ The available functionality and user experience is reflected in the table below.
    - ✅ **Issue**: PIN input displayed in plain text on deployed version
    - ✅ **Solution**: Implemented client-side JavaScript PIN masking for WebSocket environments
    - ✅ **Status**: PIN now displays as asterisks (*) in all environments
+   - 📋 **Technical Details**: [PIN Masking Fix Documentation](PIN_MASKING_FIX.md)
 
 **Performance (95-99/100)** 🟢
 
@@ -1262,6 +1266,8 @@ The application implements secure PIN input masking with **cross-platform suppor
 - ✅ **Render.com compatibility** - Fixed PIN masking that was not working on the deployed version
 - ✅ **Client-side masking** - Added JavaScript-based PIN masking for WebSocket environments
 - ✅ **Automatic detection** - Detects PIN prompts and enables masking mode dynamically
+
+> 📋 **For detailed technical implementation:** [PIN Masking Fix Documentation](PIN_MASKING_FIX.md)
 
 **How it works:**
 - **Windows**: Uses `msvcrt.getch()` for character-by-character input
