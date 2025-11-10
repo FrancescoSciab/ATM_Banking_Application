@@ -77,15 +77,26 @@
 
         // Server -> terminal
         ws.onmessage = function (evt) {
+            let text = '';
             if (typeof evt.data === 'string') {
-                term.write(evt.data);
+                text = evt.data;
+                term.write(text);
             } else if (evt.data instanceof ArrayBuffer) {
-                var txt = new TextDecoder('utf-8').decode(new Uint8Array(evt.data));
-                term.write(txt);
+                text = new TextDecoder('utf-8').decode(new Uint8Array(evt.data));
+                term.write(text);
             } else {
                 var reader = new FileReader();
-                reader.onload = function () { term.write(reader.result); };
+                reader.onload = function () { 
+                    text = reader.result;
+                    term.write(text); 
+                };
                 reader.readAsText(evt.data);
+            }
+            
+            // Check if the received text contains PIN prompt
+            // Look for patterns like "PIN: " at the end of the text
+            if (text && (text.includes('PIN: ') || text.includes('Enter new PIN: ') || text.includes('Confirm new PIN: ') || text.includes('Enter current PIN: '))) {
+                isPinMode = true;
             }
         };
 
@@ -98,6 +109,10 @@
             // document.getElementById('terminal').classList.remove('active');
         };
 
+        // PIN masking state
+        let isPinMode = false;
+        let lastLine = '';
+
         // Simple local-echo line editor: buffer input, echo locally, send on Enter
         let line = '';
         term.onData(function (data) {
@@ -108,6 +123,7 @@
                 term.write('\r\n');
                 ws.send(line + '\n');  // send the completed line
                 line = '';
+                isPinMode = false; // Reset PIN mode after submission
                 return;
             }
 
@@ -116,6 +132,7 @@
                 term.write('^C\r\n');
                 ws.send('\x03');
                 line = '';
+                isPinMode = false;
                 return;
             }
 
@@ -136,9 +153,15 @@
                         term.write('\r\n');
                         ws.send(line + '\n');
                         line = '';
+                        isPinMode = false;
                     } else if (ch >= ' ') {
                         line += ch;
-                        term.write(ch);
+                        // Echo character based on PIN mode
+                        if (isPinMode && ch >= '0' && ch <= '9') {
+                            term.write('*');
+                        } else if (!isPinMode) {
+                            term.write(ch);
+                        }
                     }
                 }
                 return;
@@ -147,7 +170,12 @@
             // Printable characters
             if (data >= ' ') {
                 line += data;
-                term.write(data);
+                // Echo character based on PIN mode
+                if (isPinMode && data >= '0' && data <= '9') {
+                    term.write('*');
+                } else if (!isPinMode) {
+                    term.write(data);
+                }
             }
         });
 
