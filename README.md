@@ -1392,9 +1392,9 @@ def get_pin(prompt="PIN: ", max_length=6):
 
 [Back to Table of Contents](#table-of-contents)
 
-## 🐛 Bug Fixes
+## Bug Fixes
 
-**PIN Masking Fix**
+**PIN Masking Fix** 🐛
 - ✅ **Fixed**: PIN masking now works correctly on Render.com deployment
 - ✅ **Enhancement**: Added client-side PIN masking for web environments
 - ✅ **Security**: PIN input now displays as asterisks (*) in all environments
