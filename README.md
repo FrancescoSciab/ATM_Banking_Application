@@ -17,6 +17,7 @@ A web-based ATM banking simulation application built with Python and Node.js, fe
   - [Overview](#overview)
     - [Features](#features)
     - [Tech Stack](#tech-stack)
+  - [Group Assignment](#group-assignment)
   - [ATM System Architecture](#atm-system-architecture)
     - [Understanding ATM Hardware](#understanding-atm-hardware)
       - [Hardware Components](#hardware-components)
@@ -132,6 +133,14 @@ This application simulates a real ATM banking system with a web-based terminal i
 - **Responsive Framework**: Custom CSS media queries for all device sizes
 - **Security**: Cross-platform PIN masking (msvcrt for Windows, termios for Linux/Unix), input validation, error handling
 - **Code Quality**: Comprehensive docstrings, type-safe error handling, input sanitization
+
+[Back to Table of Contents](#table-of-contents)
+
+## Group Assignment
+
+**📄 Project Proposal**: [assets/ProjectProposal_Group4.pdf](assets/ProjectProposal_Group4.pdf)
+
+This ATM Banking Application was developed as part of a collaborative group assignment for the BSc Honours in Contemporary Software Development program at Atlantic Technological University (ATU). The project proposal document contains the complete project specifications, objectives, and development plan that guided this implementation.
 
 [Back to Table of Contents](#table-of-contents)
 
