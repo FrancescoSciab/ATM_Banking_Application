@@ -1,0 +1,86 @@
+@startuml
+
+' ==============================
+' External classes (from cardHolder)
+' ==============================
+
+class API {
+    +getATMCards(cardNum: String): List<ATMCard>
+}
+
+class ATMCard {
+    -cardNumber: String
+    -pin: String
+    -failedTries: int
+    +verify_pin(pin: String): bool
+    +getFailedTries(): int
+    +check_balance(): float
+    +withdraw(amount: float): bool
+    +deposit(amount: float): bool
+    +change_pin(newPin: String): bool
+    +getCardNumber(): String
+}
+
+class Account {
+    -accountNumber: String
+    -balance: float
+    +deposit(amount: float)
+    +withdraw(amount: float)
+}
+
+class AccountHolder {
+    -name: String
+    -accounts: List<Account>
+}
+
+class SimpleClientRepo {
+    +get_record(cardNum: String): ClientRecord
+    +update_balance(cardNum: String, newBal: float): bool
+    +update_pin(cardNum: String, newPin: String): bool
+}
+
+class ClientRecord {
+    -cardNum: String
+    -pin: String
+    -balance: float
+}
+
+' ==============================
+' Main ATM program as a class representation
+' ==============================
+
+class ATMApp {
+    +print_banner()
+    +print_menu()
+    +get_pin(prompt: String, max_length: int): String
+    +authenticate(api: API): (String, Object)
+    +_parse_amount(s: String): float
+    +main()
+}
+
+' ==============================
+' Relationships
+' ==============================
+
+' 1. ATMApp depends on API
+ATMApp ..> API : uses
+
+' 2. API returns ATMCard objects
+API --> ATMCard : returns
+
+' 3. ATMApp authenticates and operates ATMCard
+ATMApp --> ATMCard : authenticates / operates
+
+' 4. ATMApp uses SimpleClientRepo if API fails
+ATMApp ..> SimpleClientRepo : uses (fallback)
+
+' 5. SimpleClientRepo creates and accesses ClientRecord
+SimpleClientRepo --> ClientRecord : creates / updates
+
+' 6. AccountHolder aggregates Accounts (whole-part)
+AccountHolder o-- Account : owns 0..*
+
+' 7. ATMCard is associated with an Account (conceptually)
+ATMCard --> Account : accesses balance
+
+@enduml
