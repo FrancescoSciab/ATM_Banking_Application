@@ -60,6 +60,9 @@ A web-based ATM banking simulation application built with Python and Node.js, fe
       - [Responsive Features](#responsive-features)
   - [Testing](#testing)
     - [Unit Testing](#unit-testing)
+      - [Test Suite: TestCardHolderModule](#test-suite-testcardholdermodule)
+      - [Test Coverage](#test-coverage)
+      - [Running the Tests](#running-the-tests)
     - [Integration Testing](#integration-testing)
     - [Lighthouse Testing](#lighthouse-testing)
       - [Test Environment](#test-environment)
@@ -73,6 +76,7 @@ A web-based ATM banking simulation application built with Python and Node.js, fe
     - [Automated Testing](#automated-testing)
     - [Accessibility Testing](#accessibility-testing)
     - [Known Issues](#known-issues)
+    - [Recently Fixed Issues](#recently-fixed-issues)
       - [Test Results](#test-results)
       - [Analysis \& Observations](#analysis--observations)
       - [Consistency Across Tests](#consistency-across-tests)
@@ -89,13 +93,13 @@ A web-based ATM banking simulation application built with Python and Node.js, fe
   - [Bug Fixes](#bug-fixes)
   - [Code Quality \& Recent Improvements](#code-quality--recent-improvements)
     - [Recent Enhancements (November 2025)](#recent-enhancements-november-2025)
+      - [PIN Masking Bug Fix (November 10, 2025)](#pin-masking-bug-fix-november-10-2025)
       - [Run.py Improvements](#runpy-improvements)
       - [CardHolder.py Improvements](#cardholderpy-improvements)
     - [Code Quality Standards](#code-quality-standards)
       - [Python Code Standards](#python-code-standards)
       - [Error Handling Strategy](#error-handling-strategy)
       - [Security Improvements](#security-improvements)
-  - [PIN Masking Fix Documentation](PIN_MASKING_FIX.md) 📋
   - [Contributing](#contributing)
     - [Development Guidelines](#development-guidelines)
   - [Acknowledgments](#acknowledgments)
@@ -701,51 +705,88 @@ The application is fully responsive and optimized for all device types:
 
 ### Unit Testing
 
-Create comprehensive unit tests for core functionality:
+The project includes comprehensive unit tests for core functionality, focusing on the `cardHolder.py` module which contains critical banking operations.
 
-```python
-# unittest.py
-import unittest
-import sys
-import os
+#### Test Suite: TestCardHolderModule
 
-# Add project root to path
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+The `TestCardHolderModule` test suite contains 24 comprehensive test cases covering:
 
-class TestATMFunctionality(unittest.TestCase):
-    def setUp(self):
-        """Set up test fixtures before each test method."""
-        pass
+**Helper Functions (6 tests)**:
+- `formatFloatFromServer()` - Float formatting with comma/dot decimal separators
+- `_parse_balance_str()` - Balance parsing from various formats including European format
 
-    def test_card_validation(self):
-        """Test card number validation."""
-        pass
+**ClientRecord Class (3 tests)**:
+- Initialization and data validation
+- Balance parsing from multiple formats
+- Whitespace handling and data sanitization
 
-    def test_pin_verification(self):
-        """Test PIN verification logic."""
-        pass
+**Account Class (2 tests)**:
+- Account initialization
+- Balance formatting and retrieval
 
-    def test_balance_inquiry(self):
-        """Test balance checking functionality."""
-        pass
+**ATMCard Class (13 tests)**:
+- Card initialization and data integrity
+- PIN verification (correct/incorrect/string comparison)
+- Balance checking and European format support
+- Withdrawal operations (valid/insufficient funds/negative amounts)
+- Deposit operations (valid/negative amounts/invalid amounts)
+- PIN change functionality
 
-    def test_withdrawal_limits(self):
-        """Test withdrawal amount validation."""
-        pass
+![TestCardHolderModule Test Results](img/TestCardHolderModule.png)
 
-    def test_deposit_validation(self):
-        """Test deposit amount validation."""
-        pass
+#### Test Coverage
 
-if __name__ == '__main__':
-    unittest.main()
-```
+**Overall Application Coverage: 37%**
 
-**Run tests**:
+The current test suite provides focused coverage on the core banking operations:
 
+| File | Statements | Missed | Coverage | Missing Lines |
+|------|-----------|--------|----------|---------------|
+| **cardHolder.py** | 339 | 214 | **37%** | API class, AccountHolder, transfer functions, database operations |
+| **run.py** | 339 | 312 | **8%** | Main application logic, UI functions, authentication |
+| **test_atm.py** | 160 | 0 | **100%** | All test code executed |
+| **TOTAL** | 838 | 526 | **37%** | - |
+
+![Test Coverage Report](img/TestCardHolderModule-coverage.png)
+
+**Covered Components**:
+- ✅ Data formatting and parsing functions
+- ✅ ClientRecord class (initialization, balance parsing)
+- ✅ Account class (basic operations)
+- ✅ ATMCard class (PIN verification, withdrawals, deposits, balance checks)
+
+**Not Covered (Future Testing Goals)**:
+- ❌ API class methods (getAccountHolders, getAccountByID, getATMCards)
+- ❌ AccountHolder class
+- ❌ transfer_money function
+- ❌ show_welcome_message function
+- ❌ SimpleClientRepo database operations
+- ❌ run.py application logic (print_banner, print_menu, get_pin, authenticate, main)
+
+#### Running the Tests
+
+**Execute test suite**:
 ```bash
-python unittest.py
+python test_atm.py
 ```
+
+**Run with coverage report**:
+```bash
+# Install coverage tool
+pip install coverage
+
+# Run tests with coverage
+python -m coverage run --source=. test_atm.py
+
+# Generate coverage report
+python -m coverage report -m
+```
+
+**Test Results Summary**:
+- ✅ **24/24 tests passing** (100% success rate)
+- ⚡ **Execution time**: ~0.015 seconds
+- 🎯 **No failures or errors**
+- 📊 **37% overall code coverage**
 
 ### Integration Testing
 
