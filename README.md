@@ -449,7 +449,8 @@ npm start
    ```
 
    **Security Note**: PIN input masking adapts to your environment:
-   - **Local terminals**: PIN appears as asterisks (*) for maximum security
+
+   - **Local terminals**: PIN appears as asterisks (\*) for maximum security
    - **Web terminal (Render.com)**: Standard input mode - PIN displays as typed
    - The application automatically detects which mode to use based on terminal capabilities
 
@@ -614,7 +615,7 @@ Goodbye!
 
 - 4-digit numeric code
 - No spaces allowed
-- **Masked input**: Displays as asterisks (****) for security
+- **Masked input**: Displays as asterisks (\*\*\*\*) for security
 - Example: `1234` (appears as `****` when typing)
 - Supports backspace for corrections
 - Press Enter to submit
@@ -632,7 +633,7 @@ The application includes comprehensive error handling for:
 
 ### Security Features
 
-- **PIN Masking**: Real-time masking of PIN input with asterisks (*) - cross-platform support (msvcrt for Windows, termios for Linux/Unix) with max length enforcement (6 digits)
+- **PIN Masking**: Real-time masking of PIN input with asterisks (\*) - cross-platform support (msvcrt for Windows, termios for Linux/Unix) with max length enforcement (6 digits)
 - **PIN Validation**: Minimum 4-digit requirement with numeric-only validation
 - **Session Isolation**: Each user gets a separate Python process
 - **PIN Verification**: Secure PIN validation with attempt limits (max 3 attempts)
@@ -712,19 +713,23 @@ The project includes comprehensive unit tests for core functionality, focusing o
 The `TestCardHolderModule` test suite contains 24 comprehensive test cases covering:
 
 **Helper Functions (6 tests)**:
+
 - `formatFloatFromServer()` - Float formatting with comma/dot decimal separators
 - `_parse_balance_str()` - Balance parsing from various formats including European format
 
 **ClientRecord Class (3 tests)**:
+
 - Initialization and data validation
 - Balance parsing from multiple formats
 - Whitespace handling and data sanitization
 
 **Account Class (2 tests)**:
+
 - Account initialization
 - Balance formatting and retrieval
 
 **ATMCard Class (13 tests)**:
+
 - Card initialization and data integrity
 - PIN verification (correct/incorrect/string comparison)
 - Balance checking and European format support
@@ -740,22 +745,26 @@ The `TestCardHolderModule` test suite contains 24 comprehensive test cases cover
 
 The current test suite provides focused coverage on the core banking operations:
 
-| File | Statements | Missed | Coverage | Missing Lines |
-|------|-----------|--------|----------|---------------|
-| **cardHolder.py** | 339 | 214 | **37%** | API class, AccountHolder, transfer functions, database operations |
-| **run.py** | 339 | 312 | **8%** | Main application logic, UI functions, authentication |
-| **test_atm.py** | 160 | 0 | **100%** | All test code executed |
-| **TOTAL** | 838 | 526 | **37%** | - |
+| File              | Statements | Missed | Coverage | Missing Lines                                                     |
+| ----------------- | ---------- | ------ | -------- | ----------------------------------------------------------------- |
+| **cardHolder.py** | 339        | 214    | **37%**  | API class, AccountHolder, transfer functions, database operations |
+| **run.py**        | 339        | 312    | **8%**   | Main application logic, UI functions, authentication              |
+| **test_atm.py**   | 160        | 0      | **100%** | All test code executed                                            |
+| **TOTAL**         | 838        | 526    | **37%**  | -                                                                 |
 
 ![Test Coverage Report](img/TestCardHolderModule-coverage.png)
+![Test Run Module 2](img/TestRunModule_2.png)
+![Test run Module 1](img/TestRunModule_1.png)
 
 **Covered Components**:
+
 - ✅ Data formatting and parsing functions
 - ✅ ClientRecord class (initialization, balance parsing)
 - ✅ Account class (basic operations)
 - ✅ ATMCard class (PIN verification, withdrawals, deposits, balance checks)
 
 **Not Covered (Future Testing Goals)**:
+
 - ❌ API class methods (getAccountHolders, getAccountByID, getATMCards)
 - ❌ AccountHolder class
 - ❌ transfer_money function
@@ -766,11 +775,13 @@ The current test suite provides focused coverage on the core banking operations:
 #### Running the Tests
 
 **Execute test suite**:
+
 ```bash
 python test_atm.py
 ```
 
 **Run with coverage report**:
+
 ```bash
 # Install coverage tool
 pip install coverage
@@ -783,6 +794,7 @@ python -m coverage report -m
 ```
 
 **Test Results Summary**:
+
 - ✅ **24/24 tests passing** (100% success rate)
 - ⚡ **Execution time**: ~0.015 seconds
 - 🎯 **No failures or errors**
@@ -885,7 +897,7 @@ The available functionality and user experience is reflected in the table below.
 | WebSocket connection establishes      |     ✓      |         ✓          |  Pass  | Real-time communication with backend               |
 | **Authentication**                    |
 | User can insert card number           |     ✓      |         ✓          |  Pass  | Accepts 16-digit card numbers                      |
-| User can enter PIN                    |     ✓      |         ✓          |  Pass  | PIN input is now properly masked as asterisks (*) |
+| User can enter PIN                    |     ✓      |         ✓          |  Pass  | PIN input is now properly masked as asterisks (\*) |
 | System validates card number          |     ✓      |         ✓          |  Pass  | "Card not found" for invalid cards                 |
 | System validates PIN                  |     ✓      |         ✓          |  Pass  | "Incorrect PIN" for wrong PIN                      |
 | System tracks failed attempts         |     ✓      |         ✓          |  Pass  | Locks after 3 failed attempts                      |
@@ -1086,7 +1098,7 @@ The available functionality and user experience is reflected in the table below.
 1. **PIN Masking on Render.com (Fixed November 10, 2025):**
    - ✅ **Issue**: PIN input displayed in plain text on deployed version
    - ✅ **Solution**: Implemented client-side JavaScript PIN masking for WebSocket environments
-   - ✅ **Status**: PIN now displays as asterisks (*) in all environments
+   - ✅ **Status**: PIN now displays as asterisks (\*) in all environments
    - 📋 **Technical Details**: [PIN Masking Fix Documentation](PIN_MASKING_FIX.md)
 
 **Performance (95-99/100)** 🟢
@@ -1304,6 +1316,7 @@ If you encounter issues:
 The application implements secure PIN input masking with **cross-platform support** and **web compatibility**:
 
 **Recent Fix (November 10, 2025):**
+
 - ✅ **Render.com compatibility** - Fixed PIN masking that was not working on the deployed version
 - ✅ **Client-side masking** - Added JavaScript-based PIN masking for WebSocket environments
 - ✅ **Automatic detection** - Detects PIN prompts and enables masking mode dynamically
@@ -1311,17 +1324,19 @@ The application implements secure PIN input masking with **cross-platform suppor
 > 📋 **For detailed technical implementation:** [PIN Masking Fix Documentation](PIN_MASKING_FIX.md)
 
 **How it works:**
+
 - **Windows**: Uses `msvcrt.getch()` for character-by-character input
 - **Linux/Unix**: Uses `termios` and `tty` for raw terminal input
 - **WebSocket/Pseudo-terminals**: Uses client-side JavaScript masking when terminal masking is unavailable
-- **Web Browsers**: Detects PIN prompts and masks numeric input as asterisks (*)
-- Each digit displays as an asterisk (*) instead of the actual number
+- **Web Browsers**: Detects PIN prompts and masks numeric input as asterisks (\*)
+- Each digit displays as an asterisk (\*) instead of the actual number
 - Backspace functionality allows secure corrections
 - PIN is never displayed in plain text during input
 - Automatically detects operating system and terminal capabilities
 - Graceful degradation for non-TTY environments (WebSocket, pipes, redirects)
 
 **Code Implementation:**
+
 ```python
 import platform
 
@@ -1337,17 +1352,17 @@ def get_pin(prompt="PIN: ", max_length=6):
     """
     Securely get PIN input with masked display (cross-platform).
     Falls back to standard input if terminal masking is unavailable.
-    
+
     Args:
         prompt: The prompt to display
         max_length: Maximum PIN length (default: 6)
-    
+
     Returns:
         The entered PIN as a string
     """
     print(prompt, end='', flush=True)
     pin = ''
-    
+
     # Check if we can use terminal masking
     can_mask = False
     if IS_WINDOWS:
@@ -1361,7 +1376,7 @@ def get_pin(prompt="PIN: ", max_length=6):
                 can_mask = True
         except (AttributeError, OSError, termios.error):
             can_mask = False
-    
+
     if not can_mask:
         # Fallback to standard input for WebSocket/pseudo-terminals
         try:
@@ -1370,19 +1385,19 @@ def get_pin(prompt="PIN: ", max_length=6):
         except (EOFError, KeyboardInterrupt):
             print()
             raise KeyboardInterrupt
-    
+
     if IS_WINDOWS:
         # Windows implementation using msvcrt
         while True:
             ch = msvcrt.getch()
-            if ch in {b'\r', b'\n'}: 
+            if ch in {b'\r', b'\n'}:
                 print()
                 break
-            elif ch == b'\x08': 
+            elif ch == b'\x08':
                 if len(pin) > 0:
                     pin = pin[:-1]
                     print('\b \b', end='', flush=True)
-            elif ch in {b'\x03', b'\x1b'}: 
+            elif ch in {b'\x03', b'\x1b'}:
                 raise KeyboardInterrupt
             elif ch.isdigit() and len(pin) < max_length:
                 pin += ch.decode()
@@ -1395,7 +1410,7 @@ def get_pin(prompt="PIN: ", max_length=6):
             tty.setraw(fd)
             while True:
                 ch = sys.stdin.read(1)
-                
+
                 if ch in {'\n', '\r'}:  # Enter
                     print('\r\n', end='', flush=True)
                     break
@@ -1410,11 +1425,12 @@ def get_pin(prompt="PIN: ", max_length=6):
                     print('*', end='', flush=True)
         finally:
             termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
-    
+
     return pin
 ```
 
 **Benefits:**
+
 - ✅ **Cross-platform compatibility** - Works on Windows, Linux, Unix, and macOS
 - ✅ **WebSocket compatibility** - Gracefully handles pseudo-terminal environments
 - ✅ **Automatic fallback** - Uses standard input when terminal masking unavailable
@@ -1445,9 +1461,10 @@ def get_pin(prompt="PIN: ", max_length=6):
 ## Bug Fixes
 
 **PIN Masking Fix** 🐛
+
 - ✅ **Fixed**: PIN masking now works correctly on Render.com deployment
 - ✅ **Enhancement**: Added client-side PIN masking for web environments
-- ✅ **Security**: PIN input now displays as asterisks (*) in all environments
+- ✅ **Security**: PIN input now displays as asterisks (\*) in all environments
 - ✅ **Compatibility**: Maintains backward compatibility with local development
 
 📋 **[View Complete PIN Masking Fix Documentation](PIN_MASKING_FIX.md)**
@@ -1461,14 +1478,16 @@ def get_pin(prompt="PIN: ", max_length=6):
 The application has undergone significant code quality improvements and bug fixes:
 
 #### PIN Masking Bug Fix (November 10, 2025)
+
 - ✅ **Fixed PIN masking on Render.com** - Resolved issue where PIN input was displayed in plain text on the deployed version
 - ✅ **Client-side PIN masking** - Implemented JavaScript-based PIN masking for WebSocket environments
 - ✅ **Cross-platform compatibility** - PIN masking now works in both local terminals and web-based pseudo-terminals
 - ✅ **Real-time detection** - Automatically detects PIN prompts and enables masking mode
-- ✅ **Security enhancement** - PIN digits now display as asterisks (*) in all deployment environments
+- ✅ **Security enhancement** - PIN digits now display as asterisks (\*) in all deployment environments
 - ✅ **Backward compatibility** - Maintains server-side masking for local development environments
 
 #### Run.py Improvements
+
 - ✅ **Cross-platform PIN masking** - Added support for both Windows (msvcrt) and Linux/Unix (termios) environments
 - ✅ **WebSocket compatibility** - Added fallback to standard input for pseudo-terminal environments
 - ✅ **Terminal capability detection** - Automatically detects if masking is available before attempting
@@ -1483,6 +1502,7 @@ The application has undergone significant code quality improvements and bug fixe
 - ✅ **Deployment compatibility** - Fixed "Inappropriate ioctl for device" error in WebSocket environment
 
 #### CardHolder.py Improvements
+
 - ✅ **Removed debug statements** - Eliminated development `print()` statements from production code
 - ✅ **Enhanced error handling** - Replaced generic `except:` with specific exception types
 - ✅ **Added validation** - PIN validation in `setPin()` with numeric check and length requirements
@@ -1495,6 +1515,7 @@ The application has undergone significant code quality improvements and bug fixe
 ### Code Quality Standards
 
 #### Python Code Standards
+
 - **PEP 8 Compliance**: All Python code follows PEP 8 style guidelines
 - **Type Safety**: Specific exception handling (ValueError, TypeError) instead of bare except
 - **Documentation**: Comprehensive docstrings with Args, Returns, and Raises sections
@@ -1502,6 +1523,7 @@ The application has undergone significant code quality improvements and bug fixe
 - **Error Messages**: User-friendly messages that don't expose technical details
 
 #### Error Handling Strategy
+
 ```python
 # Before: Generic exception handling
 try:
@@ -1520,6 +1542,7 @@ except (ValueError, TypeError) as e:
 ```
 
 #### Security Improvements
+
 - PIN length enforcement (4-6 digits)
 - Numeric-only PIN validation
 - Amount validation (positive numbers only)

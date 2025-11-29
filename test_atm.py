@@ -26,6 +26,99 @@ from cardHolder import (
 
 # TestRunModule here:
 
+class TestRunModule(unittest.TestCase):
+
+     """Test cases for run.py module"""
+
+     def setUp(self):
+
+         """Set up test fixtures before each test method."""
+
+         pass
+
+     def tearDown(self):
+
+         """Clean up after each test method."""
+
+         pass
+
+     # Test _parse_amount function
+
+     def test_parse_amount_valid_integer(self):
+
+         """Test parsing valid integer amounts"""
+
+         self.assertEqual(_parse_amount("100"), 100.0)
+
+         self.assertEqual(_parse_amount("1000"), 1000.0)
+
+         self.assertEqual(_parse_amount("1"), 1.0)
+
+     def test_parse_amount_valid_decimal(self):
+
+         """Test parsing valid decimal amounts"""
+
+         self.assertEqual(_parse_amount("100.50"), 100.50)
+
+         self.assertEqual(_parse_amount("1250.75"), 1250.75)
+
+         self.assertAlmostEqual(_parse_amount("0.01"), 0.01, places=2)
+
+     def test_parse_amount_european_format(self):
+
+         """Test parsing European number format (comma as decimal)"""
+
+         self.assertEqual(_parse_amount("100,50"), 100.50)
+
+         self.assertEqual(_parse_amount("1250,75"), 1250.75)
+
+         self.assertEqual(_parse_amount("1 250,75"), 1250.75)
+
+     def test_parse_amount_with_spaces(self):
+
+         """Test parsing amounts with spaces"""
+
+         self.assertEqual(_parse_amount("1 000"), 1000.0)
+
+         self.assertEqual(_parse_amount("10 000.50"), 10000.50)
+
+         self.assertEqual(_parse_amount(" 100 "), 100.0)
+
+     def test_parse_amount_negative_raises_error(self):
+
+         """Test that negative amounts raise ValueError"""
+
+         with self.assertRaises(ValueError) as context:
+
+             _parse_amount("-100")
+
+         # The error message includes "Invalid amount format" which wraps the negative check
+
+         self.assertTrue("invalid" in str(context.exception).lower() or "negative" in str(context.exception).lower())
+
+     def test_parse_amount_invalid_format(self):
+
+         """Test that invalid formats raise ValueError"""
+
+         with self.assertRaises(ValueError):
+
+             _parse_amount("abc")
+
+         with self.assertRaises(ValueError):
+
+             _parse_amount("12.34.56")
+
+         with self.assertRaises(ValueError):
+
+             _parse_amount("")
+
+     def test_parse_amount_zero(self):
+
+         """Test parsing zero amount"""
+
+         self.assertEqual(_parse_amount("0"), 0.0)
+
+         self.assertEqual(_parse_amount("0.00"), 0.0)
 
 
 
@@ -343,7 +436,7 @@ def run_tests():
     suite = unittest.TestSuite()
     
     # Add all test classes
-    # suite.addTests(loader.loadTestsFromTestCase(TestRunModule))
+    suite.addTests(loader.loadTestsFromTestCase(TestRunModule))
     suite.addTests(loader.loadTestsFromTestCase(TestCardHolderModule))
     # suite.addTests(loader.loadTestsFromTestCase(TestInputValidation))
     # suite.addTests(loader.loadTestsFromTestCase(TestErrorHandling))
