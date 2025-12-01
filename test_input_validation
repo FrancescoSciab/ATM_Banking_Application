@@ -1,1 +1,324 @@
+import unittest
+from unittest.mock import patch
+import builtins
 
+import cardHolder as ch
+from cardHolder import transfer_money, ClientRecord, ATMCard
+
+
+# ---------- Helpers / Stubs ----------
+
+class DummyRepo:
+    """
+    Simple in-memory repo to use with transfer_money().
+    Mimics the methods used in the real SimpleClientRepo.
+    """
+    def __init__(self):
+        # card_num -> ClientRecord
+        self.records = {}
+        # track balance updates: list of (card_num, new_balance)
+        self.balance_updates = []
+
+    def get_record(self, card_num):
+        return self.records.get(str(card_num).strip())
+
+    def update_balance(self, card_num, new_balance):
+        # Just record that an update was requested and succeed
+        self.balance_updates.append((str(card_num).strip(), float(new_balance)))
+        # Also update our in-memory record if it exists
+        rec = self.records.get(str(card_num).strip())
+        if rec:
+            rec.balance = float(new_balance)
+        return True
+
+
+# ---------- 1. transfer_money input validation ----------
+
+class TestTransferMoneyInputValidation(unittest.TestCase):
+    """
+    #TestInputValidation for transfer_money:
+    - amount validation
+    - recipient card input
+    - confirmation input
+    """
+
+    def setUp(self):
+        # Source client with €100 balance
+        self.source = ClientRecord(
+            card_num="4532772818527395",
+            pin="1234",
+            first_name="John",
+            last_name="Doe",
+            balance="100.00"
+        )
+
+        # Destination client with €50 balance
+        self.dest = ClientRecord(
+            card_num="4532761841325802",
+            pin="0000",
+            first_name="Alice",
+            last_name="Tester",
+            balance="50.00"
+        )
+
+        self.repo = DummyRepo()
+        self.repo.records[self.dest.cardNum] = self.dest
+
+    # --- Amount validation ---
+
+    @patch.object(builtins, "input", return_value="abc")
+    def test_amount_non_numeric(self, mocked_input):
+        """
+        Non-numeric amount -> 'Invalid amount.' and no transfer.
+        """
+        transfer_money(self.source, self.repo)
+
+        self.assertEqual(self.source.balance, 100.0)
+        self.assertEqual(self.dest.balance, 50.0)
+        self.assertEqual(self.repo.balance_updates, [])
+
+    @patch.object(builtins, "input", return_value="-10")
+    def test_amount_negative(self, mocked_input):
+        """
+        Negative amount -> 'Amount must be positive.' and no transfer.
+        """
+        transfer_money(self.source, self.repo)
+
+        self.assertEqual(self.source.balance, 100.0)
+        self.assertEqual(self.dest.balance, 50.0)
+        self.assertEqual(self.repo.balance_updates, [])
+
+    @patch.object(builtins, "input", return_value="0")
+    def test_amount_zero(self, mocked_input):
+        """
+        Zero amount -> 'Amount must be positive.' and no transfer.
+        """
+        transfer_money(self.source, self.repo)
+
+        self.assertEqual(self.source.balance, 100.0)
+        self.assertEqual(self.dest.balance, 50.0)
+        self.assertEqual(self.repo.balance_updates, [])
+
+    @patch.object(builtins, "input", return_value="200")
+    def test_amount_greater_than_balance(self, mocked_input):
+        """
+        Amount > balance -> 'Insufficient funds!' and no transfer.
+        """
+        transfer_money(self.source, self.repo)
+
+        self.assertEqual(self.source.balance, 100.0)
+        self.assertEqual(self.dest.balance, 50.0)
+        self.assertEqual(self.repo.balance_updates, [])
+
+    # --- Recipient card validation ---
+
+    @patch.object(
+        builtins,
+        "input",
+        side_effect=[
+            "10",                           # amount
+            "4532772818527395",             # same as source card
+        ],
+    )
+    def test_cannot_transfer_to_self(self, mocked_input):
+        """
+        Recipient card equals source card -> 'You cannot transfer to yourself!'.
+        """
+        transfer_money(self.source, self.repo)
+
+        self.assertEqual(self.source.balance, 100.0)
+        self.assertEqual(self.dest.balance, 50.0)
+        self.assertEqual(self.repo.balance_updates, [])
+
+    @patch.object(
+        builtins,
+        "input",
+        side_effect=[
+            "10",                           # amount
+            "9999999999999999",             # non-existent card
+        ],
+    )
+    def test_recipient_not_found(self, mocked_input):
+        """
+        Unknown recipient card -> 'Recipient card not found!' and no transfer.
+        """
+        transfer_money(self.source, self.repo)
+
+        self.assertEqual(self.source.balance, 100.0)
+        self.assertEqual(self.dest.balance, 50.0)
+        self.assertEqual(self.repo.balance_updates, [])
+
+    # --- Confirmation input validation ---
+
+    @patch.object(
+        builtins,
+        "input",
+        side_effect=[
+            "10",                           # amount
+            "4532761841325802",             # valid dest card
+            "n",                            # cancel at confirmation
+        ],
+    )
+    def test_cancel_transfer_on_confirmation_n(self, mocked_input):
+        """
+        When user enters 'n' at confirmation -> 'Transfer cancelled.' and no transfer.
+        """
+        transfer_money(self.source, self.repo)
+
+        self.assertEqual(self.source.balance, 100.0)
+        self.assertEqual(self.dest.balance, 50.0)
+        self.assertEqual(self.repo.balance_updates, [])
+
+    @patch.object(
+        builtins,
+        "input",
+        side_effect=[
+            "10",                           # amount
+            "4532761841325802",             # valid dest card
+            "y",                            # confirm
+        ],
+    )
+    def test_successful_transfer_with_valid_inputs(self, mocked_input):
+        """
+        Valid amount, valid recipient, 'y' confirmation -> transfer succeeds.
+        """
+        transfer_money(self.source, self.repo)
+
+        # Source loses 10, dest gains 10
+        self.assertEqual(self.source.balance, 90.0)
+        self.assertEqual(self.dest.balance, 60.0)
+
+        # Two balance updates: one for source, one for dest
+        self.assertEqual(len(self.repo.balance_updates), 2)
+
+
+# ---------- 2. ATMCard.setPin input validation ----------
+
+class TestATMCardSetPinInputValidation(unittest.TestCase):
+    """
+    #TestInputValidation for ATMCard.setPin:
+    - PIN must be numeric
+    - PIN must be at least 4 digits
+    """
+
+    def setUp(self):
+        self.card = ATMCard(
+            accountID="1",
+            accountHolderID="1",
+            accountBalance="100.00",
+            cardNumber="1234567890123456",
+            pin="1234",
+            failedTries=0,
+        )
+
+    def test_set_pin_rejects_non_numeric(self):
+        """
+        Non-numeric PIN should be rejected and card.pin unchanged.
+        """
+        result = self.card.setPin("12ab")
+        self.assertFalse(result)
+        self.assertEqual(self.card.pin, "1234")
+
+    def test_set_pin_rejects_too_short(self):
+        """
+        PIN shorter than 4 digits should be rejected.
+        """
+        result = self.card.setPin("123")
+        self.assertFalse(result)
+        self.assertEqual(self.card.pin, "1234")
+
+    def test_set_pin_accepts_valid_with_dummy_api(self):
+        """
+        Valid numeric PIN of length >= 4 should be accepted.
+        Use a dummy API so we don't touch Google Sheets.
+        """
+
+        class DummyWorksheet:
+            def __init__(self):
+                self.updated = []
+
+            def findall(self, card_number):
+                # Pretend we found the card in column 2, row 1
+                class Cell:
+                    col = 2
+                    row = 1
+                return [Cell()]
+
+            def update_cell(self, row, col, value):
+                self.updated.append((row, col, value))
+
+        class DummySheet:
+            def __init__(self):
+                self.ws = DummyWorksheet()
+
+            def worksheet(self, name):
+                return self.ws
+
+        class DummyAPI:
+            def __init__(self):
+                self.SHEET = DummySheet()
+
+        # Patch cardHolder.API to use DummyAPI just in this context
+        with patch.object(ch, "API", DummyAPI):
+            result = self.card.setPin("5678")
+
+        self.assertTrue(result)
+        self.assertEqual(self.card.pin, "5678")
+
+
+# ---------- 3. ATMCard.withdraw input validation ----------
+
+class TestATMCardWithdrawInputValidation(unittest.TestCase):
+    """
+    #TestInputValidation for ATMCard.withdraw:
+    - amount must be numeric
+    - amount must be positive
+    - amount cannot exceed current balance
+    """
+
+    def setUp(self):
+        # Start with balance 100.00
+        self.card = ATMCard(
+            accountID="1",
+            accountHolderID="1",
+            accountBalance="100.00",
+            cardNumber="1234567890123456",
+            pin="1234",
+            failedTries=0,
+        )
+
+    def test_withdraw_non_numeric_amount(self):
+        """
+        Non-numeric amount -> False and balance unchanged.
+        """
+        result = self.card.withdraw("abc")
+        self.assertFalse(result)
+        self.assertEqual(self.card.accountBalance, "100.00")
+
+    def test_withdraw_negative_amount(self):
+        """
+        Negative amount -> '[ERROR] Withdrawal amount must be positive' and False.
+        """
+        result = self.card.withdraw(-10)
+        self.assertFalse(result)
+        self.assertEqual(self.card.accountBalance, "100.00")
+
+    def test_withdraw_zero_amount(self):
+        """
+        Zero amount -> '[ERROR] Withdrawal amount must be positive' and False.
+        """
+        result = self.card.withdraw(0)
+        self.assertFalse(result)
+        self.assertEqual(self.card.accountBalance, "100.00")
+
+    def test_withdraw_amount_greater_than_balance(self):
+        """
+        Amount > balance -> '[ERROR] Insufficient funds' and False.
+        """
+        result = self.card.withdraw(200)
+        self.assertFalse(result)
+        self.assertEqual(self.card.accountBalance, "100.00")
+
+
+if __name__ == "__main__":
+    unittest.main()
