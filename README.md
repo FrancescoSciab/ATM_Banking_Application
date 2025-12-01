@@ -26,6 +26,7 @@ A web-based ATM banking simulation application built with Python and Node.js, fe
       - [Banking Application Layer](#banking-application-layer)
       - [Communication Protocols](#communication-protocols)
     - [State Management](#state-management)
+    - [Class Diagram](#class-diagram)
   - [Web Interface Architecture](#web-interface-architecture)
     - [Controller Layer](#controller-layer)
       - [WebSocket Connection](#websocket-connection)
@@ -212,6 +213,24 @@ Each operational state (001-999) defines:
 - `001`: Success transition state
 - `011`: Error transition state
 - Additional parameters for specific operations
+
+### Class Diagram
+
+The application follows object-oriented design principles with clear separation of concerns:
+
+![ATM Application Class Diagram](assets/ATM_Class_Diagram.png)
+
+**Key Components:**
+
+- **ATMApp**: Main application controller managing user flow and authentication
+- **API**: Handles Google Sheets integration for data persistence
+- **ATMCard**: Manages card operations (PIN verification, withdrawals, deposits, balance checks)
+- **Account**: Represents user account with balance operations
+- **AccountHolder**: Manages account holder information and account relationships
+- **SimpleClientRepo**: Repository pattern for client data operations (CRUD operations)
+- **ClientRecord**: Data model representing client information structure
+
+The diagram illustrates the relationships and dependencies between core classes, showing how the application maintains separation between data access, business logic, and user interface layers.
 
 [Back to Table of Contents](#table-of-contents)
 
