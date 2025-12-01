@@ -1,6 +1,6 @@
 {
-	"pid": 40424,
-	"date": "2025-11-10T14:33:32.394Z",
+	"pid": 7336,
+	"date": "2025-11-18T11:13:47.923Z",
 	"port": 3000,
 	"ip": "localhost",
 	"stats": [
@@ -12,12 +12,12 @@
 				"build": 4099,
 				"app": "1.0.0"
 			},
-			"pid": 40424,
+			"pid": 7336,
 			"thread": "",
 			"mode": "release",
-			"overload": 8,
-			"date": "2025-11-18T10:48:17.852Z",
-			"memory": 10.02,
+			"overload": 11,
+			"date": "2025-11-27T14:24:51.094Z",
+			"memory": 9.73,
 			"rm": 0,
 			"fm": 0,
 			"wm": 0,
@@ -31,16 +31,16 @@
 			"cm": 0,
 			"dbrm": 0,
 			"dbwm": 0,
-			"usage": 0,
-			"requests": 3,
+			"usage": 4,
+			"requests": 1,
 			"pending": 0,
 			"external": 0,
 			"errors": 0,
 			"timeouts": 0,
 			"online": 0,
-			"uptime": 9142,
+			"uptime": 12046,
 			"download": 0,
-			"upload": 0.012,
+			"upload": 0.004,
 			"status": []
 		}
 	]

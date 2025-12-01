@@ -60,7 +60,7 @@ A web-based ATM banking simulation application built with Python and Node.js, fe
       - [Responsive Features](#responsive-features)
   - [Testing](#testing)
     - [Unit Testing](#unit-testing)
-      - [Test Suite: TestCardHolderModule](#test-suite-testcardholdermodule)
+      - [Test Suite Overview](#test-suite-overview)
       - [Test Coverage](#test-coverage)
       - [Running the Tests](#running-the-tests)
     - [Integration Testing](#integration-testing)
@@ -708,69 +708,109 @@ The application is fully responsive and optimized for all device types:
 
 The project includes comprehensive unit tests for core functionality, focusing on the `cardHolder.py` module which contains critical banking operations.
 
-#### Test Suite: TestCardHolderModule
+#### Test Suite Overview
 
-The `TestCardHolderModule` test suite contains 24 comprehensive test cases covering:
+The test suite contains **102 comprehensive test cases** across **11 test classes** covering all critical application functionality:
 
-**Helper Functions (6 tests)**:
+**1. TestRunModule (27 tests)** - Main application logic:
+- `_parse_amount()` - Amount parsing with various formats (7 tests)
+- `print_banner()` - ASCII art banner display (3 tests)
+- `print_menu()` - Menu display functionality (1 test)
+- `get_pin()` - PIN input handling with masking (3 tests)
+- `authenticate()` - Card/PIN validation and authentication flow (6 tests)
+- `main()` - Main menu operations and user flow (7 tests)
 
-- `formatFloatFromServer()` - Float formatting with comma/dot decimal separators
-- `_parse_balance_str()` - Balance parsing from various formats including European format
+**2. TestCardHolderModule (24 tests)** - Core data models:
+- `formatFloatFromServer()` - Float formatting with comma/dot separators (3 tests)
+- `_parse_balance_str()` - Balance parsing from various formats (3 tests)
+- `ClientRecord` class - Initialization and data validation (3 tests)
+- `Account` class - Account operations (2 tests)
+- `ATMCard` class - PIN verification, withdrawals, deposits (13 tests)
 
-**ClientRecord Class (3 tests)**:
+**3. TestCardHolderFunctions (9 tests)** - Banking operations:
+- `transfer_money()` - Money transfer scenarios (8 tests: success, failures, validation)
+- `show_welcome_message()` - Welcome screen display (1 test)
 
-- Initialization and data validation
-- Balance parsing from multiple formats
-- Whitespace handling and data sanitization
+**4. TestAPIClass (7 tests)** - Google Sheets API integration:
+- API initialization (success/failure scenarios)
+- `getAccountHolders()`, `getAccountByID()`, `getAccountByHolderID()`, `getATMCards()`
 
-**Account Class (2 tests)**:
+**5. TestAccountHolderClass (3 tests)** - Account holder management:
+- Initialization and `updateAccount()` operations
 
-- Account initialization
-- Balance formatting and retrieval
+**6. TestSimpleClientRepo (11 tests)** - Database operations:
+- `get_record()`, `verify()`, `update_balance()`, `update_pin()` methods
 
-**ATMCard Class (13 tests)**:
+**7. TestAccountIncreaseBalance (2 tests)** - Balance operations:
+- `Account.increaseBalance()` with success and exception handling
 
-- Card initialization and data integrity
-- PIN verification (correct/incorrect/string comparison)
-- Balance checking and European format support
-- Withdrawal operations (valid/insufficient funds/negative amounts)
-- Deposit operations (valid/negative amounts/invalid amounts)
-- PIN change functionality
+**8. TestATMCardDatabaseMethods (8 tests)** - ATM card database operations:
+- `setPin()`, `increaseFailedTries()`, `resetFailedTries()` methods
 
-![TestCardHolderModule Test Results](img/TestCardHolderModule.png)
+**9. TestInputValidation (3 tests)** - Input validation:
+- Boundary conditions and format validation
+
+**10. TestErrorHandling (5 tests)** - Exception handling:
+- Various error scenarios and recovery
+
+**11. TestDataIntegrity (3 tests)** - Data consistency:
+- Data integrity checks and validation
+
+**Test Execution Results:**
+
+![Comprehensive Unit Test Coverage - Final Results](img/Unittest coverage.png)
+*Final test execution showing 102/102 tests passing with 88% overall coverage*
 
 #### Test Coverage
 
-**Overall Application Coverage: 37%**
+**Overall Application Coverage: 88%**
 
-The current test suite provides focused coverage on the core banking operations:
+The comprehensive test suite provides extensive coverage across all core application modules:
 
 | File              | Statements | Missed | Coverage | Missing Lines                                                     |
 | ----------------- | ---------- | ------ | -------- | ----------------------------------------------------------------- |
-| **cardHolder.py** | 339        | 214    | **37%**  | API class, AccountHolder, transfer functions, database operations |
-| **run.py**        | 339        | 312    | **8%**   | Main application logic, UI functions, authentication              |
-| **test_atm.py**   | 160        | 0      | **100%** | All test code executed                                            |
-| **TOTAL**         | 838        | 526    | **37%**  | -                                                                 |
+| **cardHolder.py** | 339        | 26     | **92%**  | Edge cases and rare exception paths                               |
+| **run.py**        | 339        | 166    | **51%**  | Platform-specific code (msvcrt, termios), import error handling   |
+| **test_atm.py**   | 895        | 0      | **100%** | All test code executed                                            |
+| **TOTAL**         | 1,573      | 192    | **88%**  | -                                                                 |
 
-![Test Coverage Report](img/TestCardHolderModule-coverage.png)
-![Test Run Module 2](img/TestRunModule_2.png)
-![Test run Module 1](img/TestRunModule_1.png)
+![Comprehensive Unit Test Coverage](img/Unittest coverage.png)
 
-**Covered Components**:
+**Fully Covered Components** ✅:
 
-- ✅ Data formatting and parsing functions
-- ✅ ClientRecord class (initialization, balance parsing)
-- ✅ Account class (basic operations)
-- ✅ ATMCard class (PIN verification, withdrawals, deposits, balance checks)
+**cardHolder.py (92% coverage)**:
+- ✅ Data formatting and parsing functions (formatFloatFromServer, _parse_balance_str)
+- ✅ ClientRecord class (initialization, balance parsing, data validation)
+- ✅ SimpleClientRepo class (get_record, verify, update_balance, update_pin)
+- ✅ Account class (initialization, balance operations, increaseBalance)
+- ✅ ATMCard class (PIN verification, withdrawals, deposits, balance checks, database methods)
+- ✅ API class (initialization, getAccountHolders, getAccountByID, getAccountByHolderID, getATMCards)
+- ✅ AccountHolder class (initialization, updateAccount)
+- ✅ transfer_money function (success/failure scenarios, validation)
+- ✅ show_welcome_message function
 
-**Not Covered (Future Testing Goals)**:
+**run.py (51% coverage)**:
+- ✅ _parse_amount function (various formats, error handling)
+- ✅ print_banner function (ASCII art display)
+- ✅ print_menu function (menu display)
+- ✅ get_pin function (fallback input mode)
+- ✅ authenticate function (card/PIN validation, failed attempts)
+- ✅ main function (menu operations, user flow)
 
-- ❌ API class methods (getAccountHolders, getAccountByID, getATMCards)
-- ❌ AccountHolder class
-- ❌ transfer_money function
-- ❌ show_welcome_message function
-- ❌ SimpleClientRepo database operations
-- ❌ run.py application logic (print_banner, print_menu, get_pin, authenticate, main)
+**Uncovered Code (Platform-Specific)**:
+
+The remaining 12% of uncovered code consists primarily of:
+- ❌ Windows-specific PIN masking (msvcrt module) - Requires Windows environment
+- ❌ Linux/Unix terminal handling (termios/tty modules) - Requires Unix environment
+- ❌ Import error handling blocks - Requires simulated module failures
+- ❌ Rare exception paths in database operations - Edge cases in production scenarios
+
+**Test Statistics**:
+- 📊 **102 comprehensive tests** across 11 test classes
+- ✅ **100% success rate** (102/102 passing)
+- ⚡ **Fast execution** (~0.284 seconds)
+- 🎯 **88% code coverage** - Excellent real-world coverage
+- 🔬 **All critical business logic tested**
 
 #### Running the Tests
 
@@ -795,10 +835,17 @@ python -m coverage report -m
 
 **Test Results Summary**:
 
-- ✅ **24/24 tests passing** (100% success rate)
-- ⚡ **Execution time**: ~0.015 seconds
+- ✅ **102/102 tests passing** (100% success rate)
+- ⚡ **Execution time**: ~0.284 seconds
 - 🎯 **No failures or errors**
-- 📊 **37% overall code coverage**
+- 📊 **88% overall code coverage** (1,381/1,573 lines covered)
+- 🔬 **All critical business logic tested**
+- 💯 **test_atm.py has 100% self-coverage** (895 statements, 0 missed)
+
+**Coverage by Module**:
+- **cardHolder.py**: 92% coverage (313/339 lines)
+- **run.py**: 51% coverage (173/339 lines)
+- **test_atm.py**: 100% coverage (895/895 lines)
 
 ### Integration Testing
 
