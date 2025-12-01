@@ -2,9 +2,6 @@ import unittest
 from unittest.mock import patch
 import builtins
 
-# 👇 adjust this import to wherever transfer_money actually lives
-from run import transfer_money
-
 
 class DummySource:
     """
