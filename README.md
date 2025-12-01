@@ -758,7 +758,8 @@ The test suite contains **102 comprehensive test cases** across **11 test classe
 
 **Test Execution Results:**
 
-![Comprehensive Unit Test Coverage - Final Results](img/Unittest coverage.png)
+![Comprehensive Unit Test Coverage - Final Results](img/Unittest%20coverage.png)
+
 *Final test execution showing 102/102 tests passing with 88% overall coverage*
 
 #### Test Coverage
@@ -774,7 +775,7 @@ The comprehensive test suite provides extensive coverage across all core applica
 | **test_atm.py**   | 895        | 0      | **100%** | All test code executed                                            |
 | **TOTAL**         | 1,573      | 192    | **88%**  | -                                                                 |
 
-![Comprehensive Unit Test Coverage](img/Unittest coverage.png)
+![Comprehensive Unit Test Coverage](img/Unittest%20coverage.png)
 
 **Fully Covered Components** ✅:
 
