@@ -3,6 +3,8 @@
 
 <script>
     let started = false;
+    let term = null;
+    let ws = null;
 
     // Function to calculate optimal terminal dimensions
     function getTerminalDimensions() {
@@ -45,12 +47,33 @@
         if (started) return;
         started = true;
 
-        // Show the terminal
+        // Clean up previous terminal instance if it exists
+        if (term) {
+            try {
+                term.dispose();
+            } catch (e) {
+                console.log('Error disposing terminal:', e);
+            }
+            term = null;
+        }
+
+        // Clean up previous WebSocket if it exists
+        if (ws) {
+            try {
+                ws.close();
+            } catch (e) {
+                console.log('Error closing WebSocket:', e);
+            }
+            ws = null;
+        }
+
+        // Clear the terminal div
         const terminalDiv = document.getElementById('terminal');
+        terminalDiv.innerHTML = '';
         terminalDiv.classList.add('active');
 
         const dimensions = getTerminalDimensions();
-        var term = new Terminal({ 
+        term = new Terminal({ 
             cols: dimensions.cols, 
             rows: dimensions.rows, 
             convertEol: true,
@@ -68,7 +91,7 @@
         term.writeln('Running startup command: python run.py');
         term.writeln('');
 
-        var ws = new WebSocket(location.protocol.replace('http', 'ws') + '//' + location.hostname + (location.port ? (':' + location.port) : '') + '/');
+        ws = new WebSocket(location.protocol.replace('http', 'ws') + '//' + location.hostname + (location.port ? (':' + location.port) : '') + '/');
 
         ws.onopen = function () {
             document.getElementById('runBtn').disabled = true;
@@ -102,9 +125,12 @@
 
         ws.onerror = function (e) { console.log(e); };
         ws.onclose = function () {
-            term.write('\r\n[Session closed]\r\n');
+            if (term) {
+                term.write('\r\n[Session closed]\r\n');
+            }
             document.getElementById('runBtn').disabled = false;
             started = false;
+            ws = null;
             // Optionally hide terminal on close
             // document.getElementById('terminal').classList.remove('active');
         };
