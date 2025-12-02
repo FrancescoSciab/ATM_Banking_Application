@@ -145,7 +145,11 @@ This application simulates a real ATM banking system with a web-based terminal i
 
 **📄 Project Proposal**: [assets/ProjectProposal_Group4.pdf](assets/ProjectProposal_Group4.pdf)
 
+**📋 Project Management**: [Kanban Board](https://github.com/users/FrancescoSciab/projects/3)
+
 This ATM Banking Application was developed as part of a collaborative group assignment for the BSc Honours in Contemporary Software Development program at Atlantic Technological University (ATU). The project proposal document contains the complete project specifications, objectives, and development plan that guided this implementation.
+
+The development team utilized a Kanban board for agile project management, tracking tasks, features, and bug fixes throughout the development lifecycle. The board provided visibility into work progress and facilitated efficient collaboration among team members.
 
 [Back to Table of Contents](#table-of-contents)
 
@@ -1660,12 +1664,13 @@ We would like to express our sincere gratitude to the following individuals and 
 
 Special thanks to our collaborative development team members who contributed to building this ATM Banking Application:
 
-- **Sergiy Kochenko** - Lead Developer & Project Coordinator
+- **Sergiy Kochenko** - Software Developer & Project Coordinator
 - **Oleg Dvoinisiuk** - Software Developer
 - **Francesco Sciabbarrasi** - Software Developer
-- **Brian McNamara** - Software Developer
-- **Chris OBroin** - Software Developer
-- **[Team Member 5]** - [Role/Contribution]
+- **Brian Mc Namara** - Software Developer
+- **Chris Byrne** - Software Developer
+- **Peace Agbonlahor Awana** - Software Developer
+- **Kristine Kaulina** - Software Developer
 
 ### Technical Acknowledgments
 
